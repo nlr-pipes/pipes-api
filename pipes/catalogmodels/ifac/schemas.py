@@ -30,10 +30,14 @@ class ModelingTeam(BaseModel):
     )
 
 from datetime import datetime
-from pydantic import BaseModel,model_validator, Field
+from pydantic import BaseModel, model_validator, Field
 from typing import Union, Optional, List, Dict
 
 class SpatialDimensions(BaseModel):
+    name: str = Field(
+        title="name",
+        description="Label for this spatial dimension entry (e.g. 'Zonal CONUS', 'Nodal ERCOT').",
+    )
     extent: str = Field(
         title="extent",
         description="The spatial extent of the tool/dataset, can be general (e.g. regional, continental, utility service area, ect.) or specific (e.g. CONUS, ERCOT, ect.)",
@@ -47,13 +51,17 @@ class SpatialDimensions(BaseModel):
         default=None,
         description="The spatial scope of the tool/dataset (Generation, Transmission, Distribution, Device or Asset Level, Other).",
     )
-    misc: Optional[Dict[str,str]] = Field(
+    misc: Optional[Dict[str, str]] = Field(
         title="misc",
         default=None,
         description="Add additional spatial dimensions context.",
     )
 
 class TemporalDimensions(BaseModel):
+    name: str = Field(
+        title="name",
+        description="Label for this temporal dimension entry (e.g. 'Hourly Multi-year', 'Annual Single-year').",
+    )
     extent: str = Field(
         title="extent",
         description="The temporal extent of the tool.",
@@ -72,7 +80,7 @@ class TemporalDimensions(BaseModel):
         default=None,
         description="Weather years used in tool.",
     )
-    misc: Optional[Dict[str,str]] = Field(
+    misc: Optional[Dict[str, str]] = Field(
         title="misc",
         default=None,
         description="Add additional temporal dimensions context.",
@@ -340,13 +348,13 @@ class Tool_Maturity(BaseModel):
     )
 
 class Teams(BaseModel):
-    lab: str = Field(
-        title="lab",
-        description="National lab with a capability of using the tool.",
+    organization: str = Field(
+        title="organization",
+        description="Organization with a capability of using the tool (e.g. NREL, ANL, university, utility).",
     )
     role: str = Field(
         title="role",
-        description="Role of the lab team for the tool (developer, maintainer, user).",
+        description="Role of the team for the tool (developer, maintainer, user).",
     )
     contact: str = Field(
         title="contact",
@@ -370,6 +378,10 @@ class Expected_Scenario(BaseModel):
     )
 
 class EnvironmentRequirement(BaseModel):
+    name: str = Field(
+        title="name",
+        description="Label for this environment entry (e.g. 'HPC Environment', 'Local Workstation').",
+    )
     platform: str = Field(
         title="platform",
         description="Platforms used/required to run tool (HPC, cloud, local, specific hardware, ect.).",
@@ -382,12 +394,12 @@ class EnvironmentRequirement(BaseModel):
     licenses: Optional[List[str]] = Field(
         title="licenses",
         default=None,
-        description="Commercial software licenses needed to use the tool.",
+        description="Commercial software licenses needed to use the tool (e.g. CPLEX, Gurobi, MATLAB).",
     )
     resources: Optional[str] = Field(
         title="resources",
         default=None,
-        description="Memory/CPU/GPU resource requirements.",
+        description="Memory/CPU/GPU resource requirements (e.g. '4 cores, 16 GB RAM').",
     )
     misc: Optional[str] = Field(
         title="misc",
@@ -396,20 +408,20 @@ class EnvironmentRequirement(BaseModel):
     )
 
 class Requirements(BaseModel):
-    spatial: Optional[Dict[str,SpatialDimensions]] = Field(
+    spatial: Optional[List[SpatialDimensions]] = Field(
         title="spatial",
         default=None,
-        description="Spatial requirement block.",
+        description="Spatial requirement block. List of spatial dimension entries.",
     )
-    temporal: Optional[Dict[str,TemporalDimensions]] = Field(
+    temporal: Optional[List[TemporalDimensions]] = Field(
         title="temporal",
         default=None,
-        description="Temporal requirement block.",
+        description="Temporal requirement block. List of temporal dimension entries.",
     )
-    environment: Optional[Dict[str,EnvironmentRequirement]] = Field(
+    environment: Optional[List[EnvironmentRequirement]] = Field(
         title="environment",
         default=None,
-        description="Environment requirement block.",
+        description="Environment requirement block. List of environment entries.",
     )
     misc: Optional[Dict[str, str]] = Field(
         title="misc",
@@ -466,10 +478,16 @@ class ConfigSchema(BaseModel):
     )
 
 class IFACCatalogModelCreate(BaseModel):
-    # Required
     catalog_schema: str = Field(
         title="catalog_schema",
-        description="Catalog specsheet schema version.",
+        description="Catalog specsheet schema identifier. [Options: PIPES, IFAC]').",
+        # TODO: add a check here for the acceptable options
+    )
+    schema_version: Optional[str] = Field(
+        title="schema_version",
+        default=None,
+        description="Schema version this specsheet was authored against (e.g. '1.0').",
+        # TODO: add default values based on schema; If IFAC, schema_version = 1.0 (for now)
     )
     name: str = Field(
         title="name",
@@ -487,40 +505,79 @@ class IFACCatalogModelCreate(BaseModel):
         title="type",
         description="The type/category of the Tool.",
     )
+    prime_organization: Optional[str] = Field(
+        title="prime_organization",
+        default=None,
+        description="Primary steward organization for this tool entry (e.g. NREL, ANL).",
+    )
     use_cases: List[str] = Field(
         title="use_cases",
         description="List of IFAC use cases the tool can be used for.",
     )
-    # Optional
+    tags: Optional[List[str]] = Field(
+        title="tags",
+        default=None,
+        description="List of tags for the tool, pulled from the Tools Task 3 tag list.",
+    )
     source: Optional[str] = Field(
         title="source",
         default=None,
         description="Optional link to tool code base or other source.",
+    )
+    website: Optional[str] = Field(
+        title="website",
+        default=None,
+        description="Public-facing project website (distinct from source repo and documentation).",
     )
     documentation: Optional[str] = Field(
         title="documentation",
         default=None,
         description="Optional link to documentation.",
     )
-    training: Optional[str] = Field(
+    training: Optional[List[str]] = Field(
         title="training",
         default=None,
-        description="Optional link to training materials.",
+        description="Optional Links to training materials.",
     )
-    version: Optional[float] = Field(
+    publications: Optional[List[str]] = Field(
+        title="publications",
+        default=None,
+        description="Links/DOIs for peer-reviewed publications about the tool.",
+    )
+    example_configs: Optional[List[str]] = Field(
+        title="example_configs",
+        default=None,
+        description="Links to example configurations or workflow demonstrations.",
+    )
+    doi: Optional[str] = Field(
+        title="doi",
+        default=None,
+        description="Software DOI (e.g. 'https://doi.org/10.11578/dc.20210101').",
+    )
+    version: Optional[str] = Field(
         title="version",
         default=None,
-        description="Optional reference to tool version.",
+        description="Optional reference to tool version (semver or free-form string).",
     )
     branch: Optional[str] = Field(
         title="branch",
         default=None,
         description="Optional reference to tool feature branch.",
     )
-    tags: Optional[List[str]] = Field(
-        title="tags",
+    license_type: Optional[str] = Field(
+        title="license_type",
         default=None,
-        description="List of tags for the tool, pulled from the Tools Task 3 tag list.",
+        description="SPDX license identifier (e.g. 'BSD-3-Clause', 'Apache-2.0').",
+    )
+    software_type: Optional[str] = Field(
+        title="software_type",
+        default=None,
+        description="DOE Code software type (e.g. 'Scientific/Engineering', 'Business').",
+    )
+    programming_languages: Optional[List[str]] = Field(
+        title="programming_languages",
+        default=None,
+        description="Languages the tool is written in (e.g. ['Python', 'Julia']).",
     )
     assumptions: Optional[List[str]] = Field(
         title="assumptions",
@@ -532,63 +589,40 @@ class IFACCatalogModelCreate(BaseModel):
         default=None,
         description="Free-form list of tool features.",
     )
-
-    # Required
-    # Required tool maturity information for different aspects of the tool’s maturity for use in IFAC TA scoping.
     maturity: Tool_Maturity = Field(
         title="maturity",
-        description="Required tool maturity information for different aspects of the tool’s maturity for use in IFAC TA scoping.",
+        description="Required tool maturity information for different aspects of the tool's maturity for use in IFAC TA scoping.",
     )
-
-    # Required
-    # Team(s) that use/develop/maintain the tool across the national labs. For tools with multiple lab users or developers, add multiple entries to the Teams list.
     teams: List[Teams] = Field(
         title="teams",
-        description="Team(s) that use/develop/maintain the tool across the national labs. For tools with multiple lab users or developers, add multiple entries to the Teams list.",
+        description="Team(s) that use/develop/maintain the tool. For tools with multiple organizations, add multiple entries.",
     )
-
-    # Optional
-    # Default/expected scenarios the tool runs
     expected_scenarios: Optional[List[Expected_Scenario]] = Field(
         title="expected_scenarios",
         description="Default/expected scenarios the tool runs.",
     )
-
-    # Required
-    # Tool requirements. There are 4 types of requirements, Spatial, Temporal, Environment, and Misc, and the specsheet supports multiple requirements of each type as needed to document the full set of tool requirements.
-    # The top level key in each element determines the requirement type and required fields. An example of each requirement type is shown below. 
+    config: Optional[ConfigSchema] = Field(
+        title="config",
+        default=None,
+        description="Major configuration options/switches for the tool and their values.",
+    )
     requirements: Requirements = Field(
         title="requirements",
-        description="Tool requirements. There are 4 types of requirements, spatial, temporal, environment, and misc, and the specsheet supports multiple requirements of each type as needed to document the full set of tool requirements.\
-              The top level key in each element determines the requirement type and required fields. An example of each requirement type is shown below.",
+        description="Tool requirements. Spatial, temporal, environment, and misc blocks. Each supports multiple entries via list.",
     )
-
-    # Required
-    # Inputs of the tool, specifically input Datasets, GeneralDataDescriptions, or Misc inputs.
     inputs: Optional[List[Input]] = Field(
         title="inputs",
         default=None,
         description="Inputs of the tool, specifically input Datasets, GeneralDataDescriptions, or Misc inputs.",
     )
-
-    # Optional
-    # Outputs of the tool, specifically output general data specifications in the form of Datasets.
     outputs: Optional[List[Output]] = Field(
         title="outputs",
         default=None,
         description="Outputs of the tool, specifically output general data specifications in the form of Datasets.",
     )
 
-    # Optional
-    # Major configuration options/switches for the tool and their values.
-    config: Optional[ConfigSchema] = Field(
-        title="config",
-        default=None,
-        description="Major configuration options/switches for the tool and their values.",
-    )
-
-    # PIPES Required Fields
-    other: dict = Field(
+    # --- PIPES System Fields ---
+    other: dict = Field( # TODO: does this belong here or does user interact?
         title="other",
         default={},
         description="other metadata info about the model in dictionary",
