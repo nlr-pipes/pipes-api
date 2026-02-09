@@ -1,0 +1,24 @@
+name: Lint Code Base
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - 'gh-pages'
+
+jobs:
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "latest"
+          args: "check"
+          src: "./pipes ./tests"
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "latest"
+          args: "format --check"
+          src: "./pipes ./tests"
