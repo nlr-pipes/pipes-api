@@ -260,22 +260,6 @@ class DatasetSchema(BaseModel):
         description="Provider of the dataset (e.g. Utility, Awardee, Client, Public Source, Other).",
     )
 
-    '''@model_validator(mode="after")
-    def check_type_requirements(self):
-        if self.Type == "Published Dataset":
-            required_fields = ['Author', 'Date', 'Version', 'Location', 'Schema', 'Temporal_Dimensions', 'Spatial_Dimensions']
-            for field in required_fields:
-                if getattr(self, field) is None:
-                    raise ValueError(f"{field} is required for Published Dataset type")
-        elif self.Type == "General Data Description":
-            required_fields = ['Category','Priority']
-            for field in required_fields:
-                if getattr(self, field) is None:
-                    raise ValueError(f"{field} is required for General Data Description type")
-        else:
-            raise ValueError("Type must be either 'Published Dataset' or 'General Data Description'")
-        return self'''
-
 class Tool_Maturity(BaseModel):
     # Required
     software_license: bool = Field(
