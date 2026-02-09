@@ -460,6 +460,11 @@ class ConfigSchema(BaseModel):
         default=None,
         description="List of supported technologies.",
     )
+    example_configs: Optional[List[str]] = Field(
+        title="example_configs",
+        default=None,
+        description="Links to example configurations or workflow demonstrations.",
+    )
 
 class IFACCatalogModelCreate(BaseModel):
     catalog_schema: str = Field(
@@ -527,11 +532,6 @@ class IFACCatalogModelCreate(BaseModel):
         title="publications",
         default=None,
         description="Links/DOIs for peer-reviewed publications about the tool.",
-    )
-    example_configs: Optional[List[str]] = Field(
-        title="example_configs",
-        default=None,
-        description="Links to example configurations or workflow demonstrations.",
     )
     doi: Optional[str] = Field(
         title="doi",
