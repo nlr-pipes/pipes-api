@@ -350,7 +350,7 @@ class Tool_Maturity(BaseModel):
 class Teams(BaseModel):
     organization: str = Field(
         title="organization",
-        description="Organization with a capability of using the tool (e.g. NREL, ANL, university, utility).",
+        description="Organization name of the team member.",
     )
     role: str = Field(
         title="role",
@@ -517,7 +517,7 @@ class IFACCatalogModelCreate(BaseModel):
     tags: Optional[List[str]] = Field(
         title="tags",
         default=None,
-        description="List of tags for the tool, pulled from the Tools Task 3 tag list.",
+        description="List of tags for the tool.",
     )
     source: Optional[str] = Field(
         title="source",
@@ -572,7 +572,8 @@ class IFACCatalogModelCreate(BaseModel):
     software_type: Optional[str] = Field(
         title="software_type",
         default=None,
-        description="DOE Code software type (e.g. 'Scientific/Engineering', 'Business').",
+        description="DOE Code software type (e.g. 'Open Source, Publicly Available Repository (OS-PAR), Open Source, No Publicly Available Repository (OS-NPAR), Closed Source (CS)).",
+        # TODO: Add options
     )
     programming_languages: Optional[List[str]] = Field(
         title="programming_languages",
