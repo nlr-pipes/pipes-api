@@ -8,6 +8,7 @@ from pipes.common.exceptions import (
     DocumentDoesNotExist,
     DomainValidationError,
 )
+from pipes.accessgroups.manager import AccessGroupManager
 from pipes.catalogmodels.manager import CatalogModelManager
 from pipes.catalogmodels.schemas import (
     CatalogModelCreate,
@@ -15,7 +16,6 @@ from pipes.catalogmodels.schemas import (
     CatalogModelUpdate,
 )
 from pipes.users.auth import auth_required
-from pipes.users.manager import UserManager
 from pipes.users.schemas import UserDocument
 
 logger = logging.getLogger(__name__)
@@ -68,18 +68,24 @@ async def update_catalog_model(
     data: CatalogModelUpdate,
     user: UserDocument = Depends(auth_required),
 ):
-    user_manager = UserManager()
-    user_ids = []
-    for email in data.access_group:
-        try:
-            user_doc = await user_manager.get_user_by_email(email)
-        except DocumentDoesNotExist:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User with email '{email}' does not exist.",
-            )
-        user_ids.append(user_doc.id)
-    data.access_group = user_ids
+    """Update a catalog model. Only provided fields will be updated."""
+    logger.info(f"Updating catalog model '{model_name}'")
+
+    # Convert access group names to IDs if provided
+    if data.access_group is not None:
+        ag_manager = AccessGroupManager()
+        ag_read_list = []
+        for ag_name in data.access_group:
+            try:
+                ag_doc = await ag_manager.get_accessgroup(ag_name)
+            except DocumentDoesNotExist:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Access group with name '{ag_name}' does not exist.",
+                )
+            # ag_read_list.append(await ag_manager.read_accessgroup(ag_doc))
+            ag_read_list.append(ag_doc.id)
+        data.access_group = ag_read_list
 
     manager = CatalogModelManager()
     try:

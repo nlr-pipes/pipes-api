@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 
 from beanie import init_beanie
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -64,6 +67,9 @@ from pipes.accessgroups.routes import router as accessgroups_router
 
 from pipes.version import __version__
 
+# Add custom exception handler for validation errors
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -115,6 +121,19 @@ app = FastAPI(
     debug=settings.DEBUG,
     lifespan=lifespan,
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Log validation errors for debugging"""
+    body = await request.body()
+    logger.error(f"Validation error for {request.method} {request.url}")
+    logger.error(f"Request body: {body.decode('utf-8')}")
+    logger.error(f"Validation errors: {exc.errors()}")
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "body": body.decode('utf-8')},
+    )
 
 # CORS settings - https://fastapi.tiangolo.com/tutorial/cors/
 app.add_middleware(

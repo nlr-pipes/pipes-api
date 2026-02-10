@@ -3,10 +3,12 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+from beanie import Document, PydanticObjectId
 from pymongo.errors import DuplicateKeyError
 
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
+from pipes.accessgroups.schemas import AccessGroupCreate, AccessGroupRead, AccessGroupDocument
 from pipes.catalogmodels.schemas import (
     CatalogModelCreate,
     CatalogModelDocument,
@@ -87,10 +89,13 @@ class CatalogModelManager(AbstractObjectManager):
             query={
                 "$or": [
                     {"created_by": user.id},
-                    {"access_group": {"$in": [user.id]}},
+                    # {"access_group": {"$in": [user.id]}},
                 ],
             },
         )
+        print("=========")
+        print(f"Found {len(cm_docs)} catalog models for user '{user.id}'")
+        print("=========")
 
         cm_reads = []
         for cm_doc in cm_docs:
@@ -110,12 +115,23 @@ class CatalogModelManager(AbstractObjectManager):
         created_by_doc = await UserDocument.get(data["created_by"])
         data["created_by"] = UserRead.model_validate(created_by_doc.model_dump())
 
-        user_emails = []
-        for user_id in data["access_group"]:
-            user_doc = await UserDocument.get(user_id)
-            if user_doc:
-                user_emails.append(user_doc.email)
-        data["access_group"] = user_emails
+        access_group_list = []
+        for access_group_id in data["access_group"]:
+            access_group_doc = await AccessGroupDocument.get(access_group_id)
+            if access_group_doc:
+                ag_dict = access_group_doc.model_dump()
+                # Convert member IDs to UserRead objects
+                member_objs = []
+                for user_id in ag_dict["members"]:
+                    if isinstance(user_id, PydanticObjectId):
+                        user_doc = await UserDocument.get(user_id)
+                        if user_doc:
+                            user_read = UserRead.model_validate(user_doc.model_dump())
+                            member_objs.append(user_read.model_dump())
+                ag_dict["members"] = member_objs
+                access_group_list.append(ag_dict)
+
+        data["access_group"] = access_group_list
         return CatalogModelRead.model_validate(data)
 
     async def get_model(
@@ -162,7 +178,7 @@ class CatalogModelManager(AbstractObjectManager):
             )
 
         # Update fields
-        update_data = m_update.model_dump()
+        update_data = m_update.model_dump(exclude_unset=True, exclude_none=True)
         if update_data:
             update_data["last_modified"] = datetime.now()
             update_data["modified_by"] = user.id
