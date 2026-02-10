@@ -8,7 +8,11 @@ from pymongo.errors import DuplicateKeyError
 
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
-from pipes.accessgroups.schemas import AccessGroupCreate, AccessGroupRead, AccessGroupDocument
+from pipes.accessgroups.schemas import (
+    AccessGroupCreate,
+    AccessGroupRead,
+    AccessGroupDocument,
+)
 from pipes.catalogmodels.schemas import (
     CatalogModelCreate,
     CatalogModelDocument,

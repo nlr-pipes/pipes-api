@@ -187,6 +187,7 @@ class CatalogModelRead(CatalogModelCreate):
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
     """
+
     created_at: datetime = Field(
         title="created_at",
         description="catalog model creation time",

@@ -122,6 +122,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Log validation errors for debugging"""
@@ -132,8 +133,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors(), "body": body.decode('utf-8')},
+        content={"detail": exc.errors(), "body": body.decode("utf-8")},
     )
+
 
 # CORS settings - https://fastapi.tiangolo.com/tutorial/cors/
 app.add_middleware(
