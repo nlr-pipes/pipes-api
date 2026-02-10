@@ -9,6 +9,7 @@ from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator
 
 from pipes.users.schemas import UserRead, UserCreate
+from pipes.accessgroups.schemas import AccessGroupRead
 
 
 class ModelingTeam(BaseModel):
@@ -88,10 +89,10 @@ class DefaultCatalogModelCreate(BaseModel):
         default={},
         description="other metadata info about the model in dictionary",
     )
-    access_group: list[EmailStr] = Field(
+    access_group: list[str] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group names that have access to this model",
     )
 
     @field_validator("description", mode="before")
@@ -139,10 +140,10 @@ class DefaultCatalogModelRead(DefaultCatalogModelCreate):
         created_by: User who created the model in catalog.
     """
 
-    access_group: list[EmailStr] = Field(
+    access_group: list[AccessGroupRead] = Field(
         title="access_group",
         default=[],
-        description="A group of users' emails that has access to this model",
+        description="List of access groups that have access to this model",
     )
     created_at: datetime = Field(
         title="created_at",

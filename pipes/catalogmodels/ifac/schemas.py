@@ -10,24 +10,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict
 
 from pipes.users.schemas import UserRead, UserCreate
-
-
-class ModelingTeam(BaseModel):
-    """Modeling team information.
-
-    Attributes:
-        name: Name of the modeling team.
-        members: List of team members.
-    """
-
-    name: str = Field(
-        title="name",
-        description="Name of the modeling team",
-    )
-    members: list[UserCreate] = Field(
-        title="members",
-        description="List of team members",
-    )
+from pipes.accessgroups.schemas import AccessGroupRead
 
 from datetime import datetime
 from pydantic import BaseModel, model_validator, Field
@@ -497,7 +480,7 @@ class IFACCatalogModelCreate(BaseModel):
     prime_organization: Optional[str] = Field(
         title="prime_organization",
         default=None,
-        description="Primary steward organization for this tool entry (e.g. NREL, ANL).",
+        description="Primary steward organization for this tool entry (e.g. NLR, ANL).",
     )
     use_cases: List[str] = Field(
         title="use_cases",
@@ -612,10 +595,10 @@ class IFACCatalogModelCreate(BaseModel):
         default={},
         description="other metadata info about the model in dictionary",
     )
-    access_group: list[EmailStr] = Field(
+    access_group: list[str] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group names that have access to this model",
     )
 
 
@@ -664,10 +647,10 @@ class IFACCatalogModelRead(IFACCatalogModelCreate):
         created_by: User who created the model in catalog.
     """
 
-    access_group: list[EmailStr] = Field(
+    access_group: list[AccessGroupRead] = Field(
         title="access_group",
         default=[],
-        description="A group of users' emails that has access to this model",
+        description="List of access groups that have access to this model",
     )
     created_at: datetime = Field(
         title="created_at",
