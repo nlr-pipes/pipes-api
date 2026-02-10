@@ -20,6 +20,7 @@ from pipes.catalogmodels.default.schemas import (
     DefaultCatalogModelCreate
 )
 from pipes.users.schemas import UserDocument, UserRead
+from pipes.accessgroups.schemas import AccessGroupDocument, AccessGroupRead
 
 logger = logging.getLogger(__name__)
 
@@ -97,22 +98,24 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         )
         return cm_doc
 
-    async def get_models(self, user: UserDocument) -> list[GeneralCatalogModelDocument]:
+    async def get_models(self, user: UserDocument) -> list[GeneralCatalogModelRead]:
         """Read a model from given model document"""
         cm_docs = await self.d.find_all(
             collection=GeneralCatalogModelDocument,
             query={
                 "$or": [
                     {"created_by": user.id},
-                    {"access_group": {"$in": [user.id]}},
+                    {"access_group": {"$elemMatch":{"members":{"$in": [user.id]}}}},
                 ],
             },
         )
 
+        print(f"Found {len(cm_docs)} models for user {user.email}")
         cm_reads = []
         for cm_doc in cm_docs:
             cm_read = await self.read_model(cm_doc)
             cm_reads.append(cm_read)
+        print(f"{cm_reads}")
         return cm_reads
 
     async def read_model(
@@ -129,12 +132,12 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         modified_by_doc = await UserDocument.get(data["modified_by"])
         data["modified_by"] = UserRead.model_validate(modified_by_doc.model_dump())
 
-        user_emails = []
-        for user_id in data["access_group"]:
-            user_doc = await UserDocument.get(user_id)
-            if user_doc:
-                user_emails.append(user_doc.email)
-        data["access_group"] = user_emails
+        access_groups = []
+        for access_group_id in data["access_group"]:
+            access_group_doc = await AccessGroupDocument.get(access_group_id)
+            if access_group_doc:
+                access_groups.append(AccessGroupRead.model_validate(access_group_doc.model_dump()))
+        data["access_group"] = access_groups
         return GeneralCatalogModelRead.model_validate(data)
 
     async def get_model(

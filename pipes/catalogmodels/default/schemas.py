@@ -89,11 +89,6 @@ class DefaultCatalogModelCreate(BaseModel):
         default={},
         description="other metadata info about the model in dictionary",
     )
-    access_group: list[str] = Field(
-        title="access_group",
-        default=[],
-        description="List of access group names that have access to this model",
-    )
 
     @field_validator("description", mode="before")
     @classmethod

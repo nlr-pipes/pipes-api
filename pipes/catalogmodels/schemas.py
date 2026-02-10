@@ -56,11 +56,6 @@ class GeneralCatalogModelCreate(BaseModel, extra="allow"):
         default={},
         description="other metadata info about the model in dictionary",
     )
-    access_group: list[str] = Field(
-        title="access_group",
-        default=[],
-        description="List of access group names that have access to this model",
-    )
 
     @field_validator("description", mode="before")
     @classmethod
@@ -106,7 +101,7 @@ class GeneralCatalogModelRead(GeneralCatalogModelCreate):
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
     """
-
+    id: PydanticObjectId = Field(exclude=True)
     access_group: list[AccessGroupRead] = Field(
         title="access_group",
         default=[],
