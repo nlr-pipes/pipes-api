@@ -24,8 +24,8 @@ from pipes.users.schemas import UserDocument, UserRead
 logger = logging.getLogger(__name__)
 
 schemas = {
-    "IFAC Tool Specsheet v1.0": IFACCatalogModelCreate,
-    "Default": DefaultCatalogModelCreate,
+    "IFAC": {"1.0": IFACCatalogModelCreate},
+    "Default": {"1.0":DefaultCatalogModelCreate},
 }
 
 class GeneralCatalogModelManager(AbstractObjectManager):
@@ -36,17 +36,21 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         m_create: GeneralCatalogModelCreate,
         user: UserDocument,
     ) -> GeneralCatalogModelDocument:
-        if m_create.catalog_schema is not None:
-            if m_create.catalog_schema not in schemas:
+        if m_create.catalog_schema is not None and m_create.schema_version is not None:
+            if m_create.catalog_schema not in schemas or m_create.schema_version not in schemas[m_create.catalog_schema]:
                 raise DocumentAlreadyExists(
-                    f"Catalog schema '{m_create.catalog_schema}' does not exist.",
+                    f"Catalog schema '{m_create.catalog_schema}' version '{m_create.schema_version}' does not exist.",
                 )
             try: 
-                schemas[m_create.catalog_schema].model_validate(m_create.model_dump())
+                schemas[m_create.catalog_schema][m_create.schema_version].model_validate(m_create.model_dump())
             except Exception as e:
                 raise DocumentAlreadyExists(
-                    f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema: {e}",
+                    f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema version {m_create.schema_version}: {e}",
                 )
+        else:
+            raise DocumentAlreadyExists(
+                f"Catalog schema and version must be provided for model '{m_create.name}'.",
+            )
         m_doc = await self._create_model_document(m_create, user)
         return m_doc
 
