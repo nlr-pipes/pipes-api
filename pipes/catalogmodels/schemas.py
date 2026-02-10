@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pydantic import EmailStr
 
 import pymongo
 from pymongo import IndexModel
@@ -9,6 +8,7 @@ from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 from pipes.users.schemas import UserRead, UserCreate
+from pipes.accessgroups.schemas import AccessGroupRead
 
 
 class GeneralCatalogModelCreate(BaseModel, extra="allow"):
@@ -56,10 +56,10 @@ class GeneralCatalogModelCreate(BaseModel, extra="allow"):
         default={},
         description="other metadata info about the model in dictionary",
     )
-    access_group: list[EmailStr] = Field(
+    access_group: list[str] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group names that have access to this model",
     )
 
     @field_validator("description", mode="before")
@@ -102,20 +102,15 @@ class GeneralCatalogModelRead(GeneralCatalogModelCreate):
         expected_scenarios: List of expected model scenarios.
         modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
-        access_group: A group of users' emails that has access to this model.
+        access_group: List of access groups that have access to this model.
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
     """
 
-    id: PydanticObjectId = Field(exclude=True)
-    modified_by: UserRead = Field(
-        title="modified_by",
-        description="user who last modified the model in catalog",
-    )
-    access_group: list[EmailStr] = Field(
+    access_group: list[AccessGroupRead] = Field(
         title="access_group",
         default=[],
-        description="A group of users' emails that has access to this model",
+        description="List of access groups that have access to this model",
     )
     created_at: datetime = Field(
         title="created_at",
@@ -139,7 +134,7 @@ class GeneralCatalogModelDocument(GeneralCatalogModelCreate, Document):
         expected_scenarios: List of expected model scenarios.
         modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
-        access_group: A group of users that has access to this model.
+        access_group: List of access group object IDs that have access to this model.
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
         last_modified: Last modification datetime.
@@ -166,7 +161,7 @@ class GeneralCatalogModelDocument(GeneralCatalogModelCreate, Document):
     access_group: list[PydanticObjectId] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group object IDs that have access to this model",
     )
 
     class Settings:
