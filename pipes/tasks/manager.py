@@ -9,7 +9,7 @@ from pymongo.errors import DuplicateKeyError
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.common.schemas import ExecutionStatus
 from pipes.datasets.manager import DatasetManager
-from pipes.datasets.schemas import DatasetRead, DatasetDocument
+from pipes.datasets.schemas import DatasetDocument
 from pipes.db.manager import AbstractObjectManager
 from pipes.common.constants import NodeLabel
 from pipes.projects.schemas import ProjectDocument
@@ -30,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 
 class TaskManager(AbstractObjectManager):
-
     __label__ = NodeLabel.Task.value
 
     def __init__(self, context: ModelRunDocumentContext) -> None:
@@ -49,12 +48,8 @@ class TaskManager(AbstractObjectManager):
         assignee_doc = await self._get_or_create_assignee(task_create.assignee)
 
         # Find and link datasets
-        input_datasets = [
-            await self._get_dataset(d_name) for d_name in task_create.input_datasets
-        ]
-        output_datasets = [
-            await self._get_dataset(d_name) for d_name in task_create.output_datasets
-        ]
+        input_datasets = [await self._get_dataset(d_name) for d_name in task_create.input_datasets]
+        output_datasets = [await self._get_dataset(d_name) for d_name in task_create.output_datasets]
 
         assignee_doc_id = assignee_doc.id if assignee_doc else None
 

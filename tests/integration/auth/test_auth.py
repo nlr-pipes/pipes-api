@@ -6,7 +6,6 @@ from fastapi.security import HTTPAuthorizationCredentials
 
 
 def test_cognito_auth(cognito_idp_auth_response):
-
     access_token = cognito_idp_auth_response["AuthenticationResult"]["AccessToken"]
     creds = HTTPAuthorizationCredentials(
         scheme="Bearer",

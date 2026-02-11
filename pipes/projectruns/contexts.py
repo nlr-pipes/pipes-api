@@ -18,7 +18,7 @@ class ProjectRunSimpleContext(BaseModel):
     )
 
     def __str__(self):
-        return "{" f"project: {self.project}," f"projectrun: {self.projectrun}" "}"
+        return f"{{project: {self.project},projectrun: {self.projectrun}}}"
 
 
 class ProjectRunDocumentContext(BaseModel):
@@ -32,12 +32,7 @@ class ProjectRunDocumentContext(BaseModel):
     )
 
     def __str__(self):
-        return (
-            "{"
-            f"project: {self.project.name},"
-            f"projectrun: {self.projectrun.name}"
-            "}"
-        )
+        return f"{{project: {self.project.name},projectrun: {self.projectrun.name}}}"
 
 
 class ProjectRunObjectContext(BaseModel):
@@ -48,4 +43,4 @@ class ProjectRunObjectContext(BaseModel):
     )
 
     def __str__(self):
-        return "{" f"project: {self.project}," f"projectrun: {self.projectrun}" "}"
+        return f"{{project: {self.project},projectrun: {self.projectrun}}}"

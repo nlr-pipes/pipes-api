@@ -20,8 +20,7 @@ def parse_datetime(value: Any) -> datetime:
     """Parse datetime from given value"""
     if isinstance(value, datetime):
         return value
-    else:
-        value = str(value)
+    value = str(value)
 
     value = parser.parse(value)
 

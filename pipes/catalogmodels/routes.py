@@ -115,4 +115,3 @@ async def delete_catalog_model(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
-    return None

@@ -1,10 +1,9 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import boto3
 import pytest
-import pytz
 from dateutil.parser import parse
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
@@ -34,7 +33,7 @@ def pipes_settings(autouse=True):
 
 @pytest.fixture(autouse=True)
 def test_client():
-    from main import app
+    from pipes.app import app
 
     return TestClient(app)
 
@@ -56,9 +55,7 @@ def access_token(pipes_settings):
             auth_datetime = parse(auth_date)
             now = datetime.now()
             expiration_datetime = auth_datetime + timedelta(seconds=int(expires_in))
-            expiration_datetime = expiration_datetime.astimezone(pytz.utc).replace(
-                tzinfo=None,
-            )
+            expiration_datetime = expiration_datetime.astimezone(timezone.utc).replace(tzinfo=None)
 
             if now < expiration_datetime:
                 auth_result = cached_auth_result

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.users.schemas import UserCreate, UserRead
 
 import pymongo
-from pymongo import IndexModel
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator
-
-from pipes.users.schemas import UserRead, UserCreate
-from pipes.accessgroups.schemas import AccessGroupRead
+from pymongo import IndexModel
 
 
 class ModelingTeam(BaseModel):

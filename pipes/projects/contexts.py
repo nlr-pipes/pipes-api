@@ -13,7 +13,7 @@ class ProjectSimpleContext(BaseModel):
     )
 
     def __str__(self):
-        return "{" f"project: {self.project}" "}"
+        return f"{{project: {self.project}}}"
 
 
 class ProjectDocumentContext(BaseModel):
@@ -24,7 +24,7 @@ class ProjectDocumentContext(BaseModel):
     )
 
     def __str__(self):
-        return "{" f"project: {self.project.name}" "}"
+        return f"{{project: {self.project.name}}}"
 
 
 class ProjectObjectContext(BaseModel):
@@ -34,4 +34,4 @@ class ProjectObjectContext(BaseModel):
     )
 
     def __str__(self):
-        return "{" f"project: {self.project}" "}"
+        return f"{{project: {self.project}}}"

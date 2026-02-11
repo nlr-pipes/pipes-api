@@ -26,14 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 class ModelRunManager(AbstractObjectManager):
-
     __label__ = NodeLabel.ModelRun.value
 
     def __init__(
         self,
-        context: (
-            ModelDocumentContext | ProjectRunDocumentContext | ProjectDocumentContext
-        ),
+        context: (ModelDocumentContext | ProjectRunDocumentContext | ProjectDocumentContext),
     ) -> None:
         self.context = context
 

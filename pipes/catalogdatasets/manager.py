@@ -199,7 +199,7 @@ class CatalogDatasetManager(AbstractObjectManager):
         update_data = d_update.model_dump(exclude_unset=True)
         if update_data:
             # Convert access_group emails to user IDs if present
-            if "access_group" in update_data and update_data["access_group"]:
+            if update_data.get("access_group"):
                 access_group_ids = []
                 for email in update_data["access_group"]:
                     user_doc = await UserDocument.find_one({"email": email})

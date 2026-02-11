@@ -1,26 +1,25 @@
 from __future__ import annotations
 
 import logging
-
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from pipes.common.exceptions import (
-    UserPermissionDenied,
     ContextValidationError,
     DocumentDoesNotExist,
     DomainValidationError,
+    UserPermissionDenied,
 )
 from pipes.projects.contexts import ProjectSimpleContext
 from pipes.projects.manager import ProjectManager
 from pipes.projects.schemas import (
-    ProjectCreate,
     ProjectBasicRead,
+    ProjectCreate,
     ProjectDetailRead,
     ProjectUpdate,
 )
 from pipes.projects.validators import ProjectContextValidator
 from pipes.users.auth import auth_required
 from pipes.users.schemas import UserDocument
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -92,9 +91,7 @@ async def update_project(
     data: ProjectUpdate,
     user: UserDocument = Depends(auth_required),
 ):
-    """
-    Update Project by given project name and data.
-    """
+    """Update Project by given project name and data."""
     context = ProjectSimpleContext(project=project)
     try:
         validator = ProjectContextValidator()
@@ -168,8 +165,8 @@ async def delete_project(
             detail=str(e),
         )
     except Exception as e:
-        logger.error(f"Error deleting project '{project}': {str(e)}")
+        logger.error(f"Error deleting project '{project}': {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete project: {str(e)}",
+            detail=f"Failed to delete project: {e!s}",
         )

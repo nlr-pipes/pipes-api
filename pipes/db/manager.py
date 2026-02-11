@@ -6,7 +6,6 @@ from pipes.db.document import DocumentDB
 
 
 class AbstractObjectManager(ABC):
-
     __label__: str | None = None
 
     @property
