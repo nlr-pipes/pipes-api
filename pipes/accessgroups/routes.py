@@ -25,7 +25,7 @@ async def create_accessgroup(
     """Create a new access group"""
     try:
         manager = AccessGroupManager()
-        ag_doc = await manager.create_accessgroup(data)
+        ag_doc = await manager.create_accessgroup(data, user)
     except DocumentAlreadyExists as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -54,7 +54,7 @@ async def get_accessgroups(
 ):
     """Get all access groups"""
     manager = AccessGroupManager()
-    accessgroups = await manager.get_all_accessgroups()
+    accessgroups = await manager.get_all_accessgroups(created_by=user)
     return accessgroups
 
 
@@ -66,7 +66,7 @@ async def get_accessgroup(
     """Get a specific access group by name"""
     try:
         manager = AccessGroupManager()
-        ag_doc = await manager.get_accessgroup(accessgroup)
+        ag_doc = await manager.get_accessgroup(accessgroup, created_by=user)
     except DocumentDoesNotExist as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -98,7 +98,7 @@ async def update_accessgroup(
     """Update access group"""
     try:
         manager = AccessGroupManager()
-        ag_doc = await manager.update_accessgroup(accessgroup, data)
+        ag_doc = await manager.update_accessgroup(accessgroup, data, created_by=user)
     except (DocumentDoesNotExist, DocumentAlreadyExists) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -126,7 +126,7 @@ async def delete_accessgroup(
     """Delete a specific access group by name"""
     try:
         manager = AccessGroupManager()
-        await manager.delete_accessgroup(accessgroup)
+        await manager.delete_accessgroup(accessgroup, created_by=user)
     except DocumentDoesNotExist as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

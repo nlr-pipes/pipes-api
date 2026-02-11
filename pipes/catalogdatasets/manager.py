@@ -5,6 +5,7 @@ from datetime import datetime
 
 from pymongo.errors import DuplicateKeyError
 
+from pipes.accessgroups.schemas import AccessGroupDocument
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
 from pipes.catalogdatasets.schemas import (
@@ -102,12 +103,20 @@ class CatalogDatasetManager(AbstractObjectManager):
 
     async def get_datasets(self, user: UserDocument) -> list[CatalogDatasetRead]:
         """Get all datasets accessible by user"""
+                # First, find all access groups where the user is a member
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        # Query for datasets where user is creator OR dataset is in user's access groups
         cd_docs = await self.d.find_all(
             collection=CatalogDatasetDocument,
             query={
                 "$or": [
                     {"created_by": user.id},
-                    {"access_group": {"$in": [user.id]}},
+                    {"access_group": {"$in": access_group_ids}},
                 ],
             },
         )
@@ -141,11 +150,19 @@ class CatalogDatasetManager(AbstractObjectManager):
         user: UserDocument,
     ) -> CatalogDatasetRead:
         """Get a specific dataset by name"""
+        # First, find all access groups where the user is a member
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        # Query for datasets where user is creator OR dataset is in user's access groups
         query = {
             "name": dataset_name,
             "$or": [
                 {"created_by": user.id},
-                {"access_group": {"$in": [user.id]}},
+                {"access_group": {"$in": access_group_ids}},
             ],
         }
         cd_doc = await self.d.find_one(

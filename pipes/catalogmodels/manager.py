@@ -88,18 +88,23 @@ class CatalogModelManager(AbstractObjectManager):
 
     async def get_models(self, user: UserDocument) -> list[CatalogModelDocument]:
         """Read a model from given model document"""
+        # First, find all access groups where the user is a member
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        # Query for models where user is creator OR model is in user's access groups
         cm_docs = await self.d.find_all(
             collection=CatalogModelDocument,
             query={
                 "$or": [
                     {"created_by": user.id},
-                    # {"access_group": {"$in": [user.id]}},
+                    {"access_group": {"$in": access_group_ids}},
                 ],
             },
         )
-        print("=========")
-        print(f"Found {len(cm_docs)} catalog models for user '{user.id}'")
-        print("=========")
 
         cm_reads = []
         for cm_doc in cm_docs:
@@ -144,11 +149,19 @@ class CatalogModelManager(AbstractObjectManager):
         user: UserDocument,
     ) -> CatalogModelRead:
         """Get a specific model by name"""
+        # First, find all access groups where the user is a member
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        # Query for models where user is creator OR model is in user's access groups
         query = {
             "name": model_name,
             "$or": [
                 {"created_by": user.id},
-                {"access_group": {"$in": [user.id]}},
+                {"access_group": {"$in": access_group_ids}},
             ],
         }
         cm_doc = await self.d.find_one(
