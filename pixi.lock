@@ -4165,9 +4165,9 @@ packages:
   size: 72010
   timestamp: 1769093650580
 - pypi: ./
-  name: pipes
-  version: 0.0.0
-  sha256: 4fdf05d5e9be3f461bea25235efb0dd81918b34be48b94f163c2500614f59e74
+  name: pipes-api
+  version: 0.2.1
+  sha256: fccb40c7e7c73698aca28c034620d3b0eb2c111820fca8a3fb8ca1f36ea4bd8b
   requires_dist:
   - async-timeout==5.0.1
   - beanie==1.30.0
@@ -4183,7 +4183,6 @@ packages:
   - shortuuid==1.0.13
   - uvicorn==0.38.0
   - ruff>=0.8.6,<0.15.0
-  - python-dotenv>=1.0.0,<=1.2.1
   - httpx==0.28.1 ; extra == 'dev'
   - pre-commit==4.2.0 ; extra == 'dev'
   - pytz==2024.2 ; extra == 'dev'
@@ -4191,7 +4190,7 @@ packages:
   - types-requests==2.32.0.20241016 ; extra == 'dev'
   - pytest==8.3.4 ; extra == 'test'
   - pytest-cov==6.0.0 ; extra == 'test'
-  requires_python: '>=3.10'
+  requires_python: '>=3.9'
 - conda: https://conda.anaconda.org/conda-forge/noarch/platformdirs-4.5.1-pyhcf101f3_0.conda
   sha256: 04c64fb78c520e5c396b6e07bc9082735a5cc28175dbe23138201d0a9441800b
   md5: 1bd2e65c8c7ef24f4639ae6e850dacc2

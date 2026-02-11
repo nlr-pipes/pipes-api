@@ -210,7 +210,7 @@ channels = ["conda-forge", "microsoft", "anaconda", "main"]
 platforms = ["win-64", "osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
 
 [tool.pixi.pypi-dependencies]
-pipes = { path = ".", editable = true }
+pipes-api = { path = ".", editable = true }
 
 [tool.pixi.dependencies]
 async-timeout = "==5.0.1"
