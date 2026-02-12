@@ -102,8 +102,8 @@ class CatalogModelCreate(BaseModel):
         return value
 
 
-class CatalogModelUpdate(CatalogModelCreate):
-    """Model update schema.
+class CatalogModelUpdate(BaseModel):
+    """Model update schema. All fields are optional for PATCH operations.
 
     Attributes:
         name: The model name.
@@ -115,10 +115,59 @@ class CatalogModelUpdate(CatalogModelCreate):
         expected_scenarios: List of expected model scenarios.
         modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
-        access_group: A group of users that has access to this model.
+        access_group: List of access group names that have access to this model.
     """
 
-    pass
+    name: str | None = Field(
+        title="model_catalog",
+        default=None,
+        description="the model name",
+    )
+    display_name: str | None = Field(
+        title="display_name",
+        default=None,
+        description="Display name for this model vertex.",
+    )
+    type: str | None = Field(
+        title="type",
+        default=None,
+        description="Type of model to use in graphic headers (e.g, 'Capacity Expansion')",
+    )
+    description: list[str] | None = Field(
+        title="description",
+        default=None,
+        description="Description of the model",
+    )
+    assumptions: list[str] | None = Field(
+        title="assumptions",
+        default=None,
+        description="List of model assumptions",
+    )
+    requirements: dict | None = Field(
+        title="requirements",
+        default=None,
+        description="Model specific requirements (if different from Project and Project-Run)",
+    )
+    expected_scenarios: list[str] | None = Field(
+        title="expected_scenarios",
+        default=None,
+        description="List of expected model scenarios",
+    )
+    modeling_team: ModelingTeam | None = Field(
+        title="modeling_team",
+        default=None,
+        description="Information about the modeling team",
+    )
+    other: dict | None = Field(
+        title="other",
+        default=None,
+        description="other metadata info about the model in dictionary",
+    )
+    access_group: list[str] | None = Field(
+        title="access_group",
+        default=None,
+        description="List of access group names that have access to this model",
+    )
 
 
 class CatalogModelRead(CatalogModelCreate):
@@ -139,11 +188,6 @@ class CatalogModelRead(CatalogModelCreate):
         created_by: User who created the model in catalog.
     """
 
-    access_group: list[AccessGroupRead] = Field(
-        title="access_group",
-        default=[],
-        description="List of access groups that have access to this model",
-    )
     created_at: datetime = Field(
         title="created_at",
         description="catalog model creation time",
@@ -151,6 +195,11 @@ class CatalogModelRead(CatalogModelCreate):
     created_by: UserRead = Field(
         title="created_by",
         description="user who created the model in catalog",
+    )
+    access_group: list[AccessGroupRead] = Field(
+        title="access_group",
+        default=[],
+        description="List of access groups that have access to this model",
     )
 
 

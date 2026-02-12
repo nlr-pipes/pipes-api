@@ -103,6 +103,11 @@ class AccessGroupDocument(AccessGroupRead, Document):
         default=[],
         description="List of user object ids",
     )
+    created_by: PydanticObjectId | None = Field(
+        title="created_by",
+        default=None,
+        description="The user object id who created the access group",
+    )
 
     class Settings:
         name = "accessgroups"
