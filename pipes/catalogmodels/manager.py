@@ -3,10 +3,16 @@ from __future__ import annotations
 import logging, json
 from datetime import datetime
 
+from beanie import Document, PydanticObjectId
 from pymongo.errors import DuplicateKeyError
 
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
+from pipes.accessgroups.schemas import (
+    AccessGroupCreate,
+    AccessGroupRead,
+    AccessGroupDocument,
+)
 from pipes.catalogmodels.schemas import (
     GeneralCatalogModelCreate,
     GeneralCatalogModelDocument,
@@ -100,12 +106,20 @@ class GeneralCatalogModelManager(AbstractObjectManager):
 
     async def get_models(self, user: UserDocument) -> list[GeneralCatalogModelRead]:
         """Read a model from given model document"""
+        # First, find all access groups where the user is a member
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        # Query for models where user is creator OR model is in user's access groups
         cm_docs = await self.d.find_all(
             collection=GeneralCatalogModelDocument,
             query={
                 "$or": [
                     {"created_by": user.id},
-                    {"access_group": {"$elemMatch":{"members":{"$in": [user.id]}}}},
+                    {"access_group": {"$in": access_group_ids}},
                 ],
             },
         )
@@ -132,12 +146,23 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         modified_by_doc = await UserDocument.get(data["modified_by"])
         data["modified_by"] = UserRead.model_validate(modified_by_doc.model_dump())
 
-        access_groups = []
+        access_group_list = []
         for access_group_id in data["access_group"]:
             access_group_doc = await AccessGroupDocument.get(access_group_id)
             if access_group_doc:
-                access_groups.append(AccessGroupRead.model_validate(access_group_doc.model_dump()))
-        data["access_group"] = access_groups
+                ag_dict = access_group_doc.model_dump()
+                # Convert member IDs to UserRead objects
+                member_objs = []
+                for user_id in ag_dict["members"]:
+                    if isinstance(user_id, PydanticObjectId):
+                        user_doc = await UserDocument.get(user_id)
+                        if user_doc:
+                            user_read = UserRead.model_validate(user_doc.model_dump())
+                            member_objs.append(user_read.model_dump())
+                ag_dict["members"] = member_objs
+                access_group_list.append(ag_dict)
+
+        data["access_group"] = access_group_list
         return GeneralCatalogModelRead.model_validate(data)
 
     async def get_model(
@@ -146,11 +171,19 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         user: UserDocument,
     ) -> GeneralCatalogModelRead:
         """Get a specific model by name"""
+        # First, find all access groups where the user is a member
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        # Query for models where user is creator OR model is in user's access groups
         query = {
             "name": model_name,
             "$or": [
                 {"created_by": user.id},
-                {"access_group": {"$in": [user.id]}},
+                {"access_group": {"$in": access_group_ids}},
             ],
         }
         cm_doc = await self.d.find_one(
@@ -184,7 +217,7 @@ class GeneralCatalogModelManager(AbstractObjectManager):
             )
 
         # Update fields
-        update_data = m_update.model_dump()
+        update_data = m_update.model_dump(exclude_unset=True, exclude_none=True)
         if update_data:
             update_data["last_modified"] = datetime.now()
             update_data["modified_by"] = user.id

@@ -25,11 +25,12 @@ class AccessGroupManager(AbstractObjectManager):
     async def create_accessgroup(
         self,
         ag_create: AccessGroupCreate,
+        user: UserDocument,
     ) -> AccessGroupDocument:
         """Create document in docdb"""
         # Add access group members
         ag_members = await self._add_accessgroup_members(ag_create.members)
-        ag_doc = await self._create_accessgroup_document(ag_create, ag_members)
+        ag_doc = await self._create_accessgroup_document(ag_create, ag_members, created_by=user)
         return ag_doc
 
     async def _add_accessgroup_members(
@@ -48,6 +49,7 @@ class AccessGroupManager(AbstractObjectManager):
         self,
         ag_create: AccessGroupCreate,
         ag_members: list[UserDocument],
+        created_by: UserDocument,
     ) -> AccessGroupDocument:
         """Create new access group"""
         ag_name = ag_create.name
@@ -67,6 +69,7 @@ class AccessGroupManager(AbstractObjectManager):
             name=ag_create.name,
             description=ag_create.description,
             members=list(u_doc_ids),
+            created_by=created_by.id
         )
 
         try:
@@ -104,11 +107,11 @@ class AccessGroupManager(AbstractObjectManager):
 
         return ag_doc
 
-    async def get_all_accessgroups(self) -> list[AccessGroupRead]:
+    async def get_all_accessgroups(self, created_by: UserDocument) -> list[AccessGroupRead]:
         """Get all access groups."""
         ag_docs = await self.d.find_all(
             collection=AccessGroupDocument,
-            query={},
+            query={"created_by": created_by.id},
         )
 
         accessgroups = []
@@ -132,11 +135,12 @@ class AccessGroupManager(AbstractObjectManager):
         self,
         accessgroup: str,
         data: AccessGroupUpdate,
+        created_by: UserDocument,
     ) -> AccessGroupDocument:
         """Update access group"""
         ag_doc = await self.d.find_one(
             collection=AccessGroupDocument,
-            query={"name": accessgroup},
+            query={"name": accessgroup, "created_by": created_by.id},
         )
         if ag_doc is None:
             raise DocumentDoesNotExist(
@@ -146,7 +150,7 @@ class AccessGroupManager(AbstractObjectManager):
         if data.name != accessgroup:
             other_ag_doc = await self.d.find_one(
                 collection=AccessGroupDocument,
-                query={"name": data.name},
+                query={"name": data.name, "created_by": created_by.id},
             )
             if other_ag_doc and (ag_doc.name != other_ag_doc.name):
                 raise DocumentAlreadyExists(
@@ -172,7 +176,7 @@ class AccessGroupManager(AbstractObjectManager):
         data["members"] = await self.get_accessgroup_members(ag_doc)
         return AccessGroupRead.model_validate(data)
 
-    async def delete_accessgroup(self, name: str) -> None:
+    async def delete_accessgroup(self, name: str, created_by: UserDocument) -> None:
         """Delete an access group by name"""
         # Delete the access group document
         await self.d.delete_one(
