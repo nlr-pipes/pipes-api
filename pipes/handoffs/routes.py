@@ -154,27 +154,26 @@ async def get_handoffs(
 
         return h_reads
 
-    else:
-        context = ProjectSimpleContext(project=project)
+    context = ProjectSimpleContext(project=project)
 
-        try:
-            validator2 = ProjectContextValidator()
-            validated_context = await validator2.validate(user, context)
-        except ContextValidationError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=str(e),
-            )
-        except UserPermissionDenied as e:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=str(e),
-            )
+    try:
+        validator2 = ProjectContextValidator()
+        validated_context = await validator2.validate(user, context)
+    except ContextValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except UserPermissionDenied as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(e),
+        )
 
-        manager = HandoffManager(context=validated_context)
-        h_reads = await manager.get_handoffs(model)
+    manager = HandoffManager(context=validated_context)
+    h_reads = await manager.get_handoffs(model)
 
-        return h_reads
+    return h_reads
 
 
 @router.delete("/handoffs", status_code=204)
@@ -225,8 +224,6 @@ async def delete_handoff(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
-
-    return None
 
 
 @router.put("/handoffs", response_model=HandoffRead)

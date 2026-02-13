@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import logging
-
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from pipes.common.exceptions import (
     ContextValidationError,
     DocumentAlreadyExists,
@@ -11,16 +8,18 @@ from pipes.common.exceptions import (
     DomainValidationError,
     UserPermissionDenied,
 )
-from pipes.models.contexts import ModelSimpleContext
-from pipes.models.validators import ModelContextValidator
 from pipes.modelruns.manager import ModelRunManager
 from pipes.modelruns.schemas import ModelRunCreate, ModelRunRead
-from pipes.projects.contexts import ProjectSimpleContext
-from pipes.projects.validators import ProjectContextValidator
+from pipes.models.contexts import ModelSimpleContext
+from pipes.models.validators import ModelContextValidator
 from pipes.projectruns.contexts import ProjectRunSimpleContext
 from pipes.projectruns.validators import ProjectRunContextValidator
+from pipes.projects.contexts import ProjectSimpleContext
+from pipes.projects.validators import ProjectContextValidator
 from pipes.users.auth import auth_required
 from pipes.users.schemas import UserDocument
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -143,3 +142,5 @@ async def get_modelruns(
         manager = ModelRunManager(context=validated_context)
         mr_reads = await manager.get_modelruns()
         return mr_reads
+
+    return []

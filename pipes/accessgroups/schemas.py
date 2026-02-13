@@ -68,8 +68,6 @@ class AccessGroupUpdate(AccessGroupCreate):
         members: List of users.
     """
 
-    pass
-
 
 class AccessGroupRead(AccessGroupCreate):
     """AccessGroup read schema.

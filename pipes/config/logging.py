@@ -36,7 +36,6 @@ PIPES_LOGGING_CONFIG = {
 
 
 def setup_logging() -> None:
-    import logging
     import logging.config
 
     logging.config.dictConfig(PIPES_LOGGING_CONFIG)

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
 from enum import Enum
+from pipes.common.schemas import ExecutionStatus, SourceCode
+from pipes.datasets.schemas import DatasetRead
+from pipes.modelruns.contexts import ModelRunObjectContext, ModelRunSimpleContext
+from pipes.users.schemas import UserCreate, UserRead
 
 import pymongo
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, EmailStr, Field
 from pymongo import IndexModel
-
-from pipes.common.schemas import SourceCode, ExecutionStatus
-from pipes.modelruns.contexts import ModelRunObjectContext, ModelRunSimpleContext
-from pipes.users.schemas import UserCreate, UserRead
-from pipes.datasets.schemas import DatasetRead
 
 
 class TaskType(str, Enum):
@@ -109,7 +109,7 @@ class TaskCreate(BaseModel):
         description="Scripts used to perform the task process",
         default=None,
     )
-    input_datasets: list[str] = Field(
+    input_datasets: Sequence[str] = Field(
         title="input_datasets",
         description="List of datasets that the task applies to.",
         default=[],
@@ -119,7 +119,7 @@ class TaskCreate(BaseModel):
         description="Non-dataset inputs, i.e. parameters in dictionary",
         default={},
     )
-    output_datasets: list[str] = Field(
+    output_datasets: Sequence[str] = Field(
         title="output_datasets",
         description="List of datasets produced from this task",
         default=[],
@@ -173,8 +173,8 @@ class TaskRead(TaskCreate):
         description="Assignee in user read schema",
     )
     input_datasets: list[DatasetRead] = Field(
-         title="input_datasets",
-         description="List of input datasets in read schema",
+        title="input_datasets",
+        description="List of input datasets in read schema",
     )
     output_datasets: list[DatasetRead] = Field(
         title="output_datasets",
