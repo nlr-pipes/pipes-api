@@ -20,10 +20,10 @@ from pipes.catalogmodels.schemas import (
     GeneralCatalogModelUpdate,
 )
 from pipes.catalogmodels.ifac.schemas import (
-    IFACCatalogModelCreate
+    IFACCatalogModelMapper
 )
 from pipes.catalogmodels.default.schemas import (
-    DefaultCatalogModelCreate
+    DefaultCatalogModelMapper
 )
 from pipes.users.schemas import UserDocument, UserRead
 from pipes.accessgroups.schemas import AccessGroupDocument, AccessGroupRead
@@ -31,8 +31,8 @@ from pipes.accessgroups.schemas import AccessGroupDocument, AccessGroupRead
 logger = logging.getLogger(__name__)
 
 schemas = {
-    "IFAC": {"1.0": IFACCatalogModelCreate},
-    "Default": {"1.0":DefaultCatalogModelCreate},
+    "IFAC": {"1.0": IFACCatalogModelMapper},
+    "Default": {"1.0":DefaultCatalogModelMapper},
 }
 
 class GeneralCatalogModelManager(AbstractObjectManager):
@@ -49,7 +49,7 @@ class GeneralCatalogModelManager(AbstractObjectManager):
                     f"Catalog schema '{m_create.catalog_schema}' version '{m_create.schema_version}' does not exist.",
                 )
             try: 
-                schemas[m_create.catalog_schema][m_create.schema_version].model_validate(m_create.model_dump())
+                schemas[m_create.catalog_schema][m_create.schema_version]['create_model'].model_validate(m_create.model_dump())
             except Exception as e:
                 raise DocumentAlreadyExists(
                     f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema version {m_create.schema_version}: {e}",
@@ -124,12 +124,10 @@ class GeneralCatalogModelManager(AbstractObjectManager):
             },
         )
 
-        print(f"Found {len(cm_docs)} models for user {user.email}")
         cm_reads = []
         for cm_doc in cm_docs:
             cm_read = await self.read_model(cm_doc)
             cm_reads.append(cm_read)
-        print(f"{cm_reads}")
         return cm_reads
 
     async def read_model(
@@ -216,6 +214,19 @@ class GeneralCatalogModelManager(AbstractObjectManager):
                 f"Model '{model_name}' does not exist in catalog.",
             )
 
+        cm_data = cm_doc.model_dump()
+        catalog_schema = cm_data['catalog_schema']
+        schema_version = cm_data['schema_version']
+        if catalog_schema not in schemas or schema_version not in schemas[catalog_schema]:
+            raise DocumentAlreadyExists(
+                f"Catalog schema '{catalog_schema}' version '{schema_version}' does not exist.",
+            )
+        try: 
+            schemas[catalog_schema][schema_version]['update_model'].model_validate(m_update.model_dump())
+        except Exception as e:
+            raise DocumentAlreadyExists(
+                f"Model '{m_update.name}' does not conform to {catalog_schema} schema version {schema_version}: {e}",
+            )
         # Update fields
         update_data = m_update.model_dump(exclude_unset=True, exclude_none=True)
         if update_data:

@@ -8,6 +8,8 @@ from pymongo import IndexModel
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator
 
+from typing import List, Optional, Dict
+
 from pipes.users.schemas import UserRead, UserCreate
 from pipes.accessgroups.schemas import AccessGroupRead
 
@@ -114,7 +116,58 @@ class DefaultCatalogModelUpdate(DefaultCatalogModelCreate):
         access_group: A group of users that has access to this model.
     """
 
-    pass
+    name: Optional[str] = Field(
+        title="model_catalog",
+        min_length=1,
+        description="the model name",
+    )
+    display_name: Optional[str] = Field(
+        title="display_name",
+        default=None,
+        description="Display name for this model vertex.",
+    )
+    type: Optional[str] = Field(
+        title="type",
+        default=None,
+        description="Type of model to use in graphic headers (e.g, 'Capacity Expansion')",
+    )
+    description: Optional[list[str]] = Field(
+        title="description",
+        default=None,
+        description="Description of the model",
+    )
+    assumptions: Optional[list[str]] = Field(
+        title="assumptions",
+        description="List of model assumptions",
+        default=[],
+    )
+    requirements: Optional[dict] = Field(
+        title="requirements",
+        default={},
+        description="Model specific requirements (if different from Project and Project-Run)",
+    )
+    expected_scenarios: Optional[list[str]] = Field(
+        title="expected_scenarios",
+        description="List of expected model scenarios",
+        default=[],
+    )
+    modeling_team: Optional[ModelingTeam] = Field(
+        title="modeling_team",
+        description="Information about the modeling team",
+        default=None,
+    )
+    other: Optional[dict] = Field(
+        title="other",
+        default={},
+        description="other metadata info about the model in dictionary",
+    )
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def validate_description(cls, value):
+        if isinstance(value, str):
+            return [value]
+        return value
 
 
 class DefaultCatalogModelRead(DefaultCatalogModelCreate):
@@ -203,3 +256,10 @@ class DefaultCatalogModelDocument(DefaultCatalogModelCreate, Document):
                 unique=True,
             ),
         ]
+
+class DefaultCatalogModelMapper():
+    # Mapper to allow for the GeneralCatalogModelManager to interact with default schemas and documents
+    create_model : DefaultCatalogModelCreate
+    update_model : DefaultCatalogModelUpdate
+    read_model : DefaultCatalogModelRead
+    document_model : DefaultCatalogModelDocument

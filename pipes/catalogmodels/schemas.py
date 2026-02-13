@@ -65,7 +65,7 @@ class GeneralCatalogModelCreate(BaseModel, extra="allow"):
         return value
 
 
-class CatalogModelUpdate(BaseModel, extra="allow"):
+class GeneralCatalogModelUpdate(BaseModel, extra="allow"):
     """Model update schema. All fields are optional for PATCH operations.
 
     Attributes:
@@ -111,11 +111,6 @@ class CatalogModelUpdate(BaseModel, extra="allow"):
         default=None,
         description="Model specific requirements (if different from Project and Project-Run)",
     )
-    expected_scenarios: list[str] | None = Field(
-        title="expected_scenarios",
-        default=None,
-        description="List of expected model scenarios",
-    )
     other: dict | None = Field(
         title="other",
         default=None,
@@ -126,6 +121,13 @@ class CatalogModelUpdate(BaseModel, extra="allow"):
         default=None,
         description="List of access group names that have access to this model",
     )
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def validate_description(cls, value):
+        if isinstance(value, str):
+            return [value]
+        return value
 
 
 class GeneralCatalogModelRead(GeneralCatalogModelCreate):

@@ -448,14 +448,13 @@ class ConfigSchema(BaseModel):
         default=None,
         description="Links to example configurations or workflow demonstrations.",
     )
-
 class IFACCatalogModelCreate(BaseModel):
     catalog_schema: str = Field(
         title="catalog_schema",
         description="Catalog specsheet schema identifier. [Options: PIPES, IFAC]').",
         # TODO: add a check here for the acceptable options
     )
-    schema_version: Optional[str] = Field(
+    schema_version: str = Field(
         title="schema_version",
         default=None,
         description="Schema version this specsheet was authored against (e.g. '1.0').",
@@ -604,7 +603,6 @@ class IFACCatalogModelCreate(BaseModel):
             return [value]
         return value
 
-
 class IFACCatalogModelUpdate(IFACCatalogModelCreate):
     """Model update schema.
 
@@ -621,7 +619,169 @@ class IFACCatalogModelUpdate(IFACCatalogModelCreate):
         access_group: A group of users that has access to this model.
     """
 
-    pass
+    catalog_schema: Optional[str] = Field(
+        title="catalog_schema",
+        default=None,
+        description="Catalog specsheet schema identifier. [Options: PIPES, IFAC]').",
+        # TODO: add a check here for the acceptable options
+    )
+    schema_version: Optional[str] = Field(
+        title="schema_version",
+        default=None,
+        description="Schema version this specsheet was authored against (e.g. '1.0').",
+        # TODO: add default values based on schema; If IFAC, schema_version = 1.0 (for now)
+    )
+    name: Optional[str] = Field(
+        title="name",
+        default=None,
+        description="The identifier/short name/acronym of the Tool.",
+    )
+    display_name: Optional[str] = Field(
+        title="display_name",
+        default=None,
+        description="Full name of the tool.",
+    )
+    description: Optional[List[str]] = Field(
+        title="description",
+        default=None,
+        description="Tool description.",
+    )
+    type: Optional[str] = Field(
+        title="type",
+        default=None,
+        description="The type/category of the Tool.",
+    )
+    prime_organization: Optional[str] = Field(
+        title="prime_organization",
+        default=None,
+        description="Primary steward organization for this tool entry (e.g. NLR, ANL).",
+    )
+    use_cases: Optional[List[str]] = Field(
+        title="use_cases",
+        default=None,
+        description="List of IFAC use cases the tool can be used for.",
+    )
+    tags: Optional[List[str]] = Field(
+        title="tags",
+        default=None,
+        description="List of tags for the tool.",
+    )
+    source: Optional[str] = Field(
+        title="source",
+        default=None,
+        description="Optional link to tool code base or other source.",
+    )
+    website: Optional[str] = Field(
+        title="website",
+        default=None,
+        description="Public-facing project website (distinct from source repo and documentation).",
+    )
+    documentation: Optional[str] = Field(
+        title="documentation",
+        default=None,
+        description="Optional link to documentation.",
+    )
+    training: Optional[List[str]] = Field(
+        title="training",
+        default=None,
+        description="Optional Links to training materials.",
+    )
+    publications: Optional[List[str]] = Field(
+        title="publications",
+        default=None,
+        description="Links/DOIs for peer-reviewed publications about the tool.",
+    )
+    doi: Optional[str] = Field(
+        title="doi",
+        default=None,
+        description="Software DOI (e.g. 'https://doi.org/10.11578/dc.20210101').",
+    )
+    version: Optional[str] = Field(
+        title="version",
+        default=None,
+        description="Optional reference to tool version (semver or free-form string).",
+    )
+    branch: Optional[str] = Field(
+        title="branch",
+        default=None,
+        description="Optional reference to tool feature branch.",
+    )
+    license_type: Optional[str] = Field(
+        title="license_type",
+        default=None,
+        description="SPDX license identifier (e.g. 'BSD-3-Clause', 'Apache-2.0').",
+    )
+    software_type: Optional[str] = Field(
+        title="software_type",
+        default=None,
+        description="DOE Code software type (e.g. 'Open Source, Publicly Available Repository (OS-PAR), Open Source, No Publicly Available Repository (OS-NPAR), Closed Source (CS)).",
+        # TODO: Add options
+    )
+    programming_languages: Optional[List[str]] = Field(
+        title="programming_languages",
+        default=None,
+        description="Languages the tool is written in (e.g. ['Python', 'Julia']).",
+    )
+    assumptions: Optional[List[str]] = Field(
+        title="assumptions",
+        default=None,
+        description="Free-form list of assumptions the tool uses.",
+    )
+    features: Optional[List[str]] = Field(
+        title="features",
+        default=None,
+        description="Free-form list of tool features.",
+    )
+    maturity: Optional[Tool_Maturity] = Field(
+        title="maturity",
+        default=None,
+        description="Required tool maturity information for different aspects of the tool's maturity for use in IFAC TA scoping.",
+    )
+    teams: Optional[List[Teams]] = Field(
+        title="teams",
+        default=None,
+        description="Team(s) that use/develop/maintain the tool. For tools with multiple organizations, add multiple entries.",
+    )
+    expected_scenarios: Optional[List[Expected_Scenario]] = Field(
+        title="expected_scenarios",
+        default=None,
+        description="Default/expected scenarios the tool runs.",
+    )
+    config: Optional[ConfigSchema] = Field(
+        title="config",
+        default=None,
+        description="Major configuration options/switches for the tool and their values.",
+    )
+    requirements: Optional[Requirements] = Field(
+        title="requirements",
+        default=None,
+        description="Tool requirements. Spatial, temporal, environment, and misc blocks. Each supports multiple entries via list.",
+    )
+    inputs: Optional[List[Input]] = Field(
+        title="inputs",
+        default=None,
+        description="Inputs of the tool, specifically input Datasets, GeneralDataDescriptions, or Misc inputs.",
+    )
+    outputs: Optional[List[Output]] = Field(
+        title="outputs",
+        default=None,
+        description="Outputs of the tool, specifically output general data specifications in the form of Datasets.",
+    )
+
+    # --- PIPES System Fields ---
+    other: Optional[dict] = Field( # TODO: does this belong here or does user interact?
+        title="other",
+        default={},
+        description="other metadata info about the model in dictionary",
+    )
+
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def validate_description(cls, value):
+        if isinstance(value, str):
+            return [value]
+        return value
 
 
 class IFACCatalogModelRead(IFACCatalogModelCreate):
@@ -710,3 +870,11 @@ class IFACCatalogModelDocument(IFACCatalogModelCreate, Document):
                 unique=True,
             ),
         ]
+
+IFACCatalogModelMapper = {
+    # Mapper to allow for the GeneralCatalogModelManager to interact with IFAC-specific schemas and documents
+    'create_model' : IFACCatalogModelCreate,
+    'update_model' : IFACCatalogModelUpdate,
+    'read_model' : IFACCatalogModelRead,
+    'document_model' : IFACCatalogModelDocument
+}
