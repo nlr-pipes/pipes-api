@@ -2,12 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-
-from pymongo.errors import DuplicateKeyError
-
 from pipes.accessgroups.schemas import AccessGroupDocument
-from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
-from pipes.db.manager import AbstractObjectManager
 from pipes.catalogdatasets.schemas import (
     CatalogDatasetCreate,
     CatalogDatasetDocument,
@@ -15,7 +10,11 @@ from pipes.catalogdatasets.schemas import (
     CatalogDatasetUpdate,
     DatasetLocation,
 )
+from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
+from pipes.db.manager import AbstractObjectManager
 from pipes.users.schemas import UserDocument, UserRead
+
+from pymongo.errors import DuplicateKeyError
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +102,7 @@ class CatalogDatasetManager(AbstractObjectManager):
 
     async def get_datasets(self, user: UserDocument) -> list[CatalogDatasetRead]:
         """Get all datasets accessible by user"""
-                # First, find all access groups where the user is a member
+        # First, find all access groups where the user is a member
         user_access_groups = await self.d.find_all(
             collection=AccessGroupDocument,
             query={"members": user.id},

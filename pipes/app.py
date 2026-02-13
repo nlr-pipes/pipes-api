@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 
 # Access groups
@@ -65,6 +66,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from motor.motor_asyncio import AsyncIOMotorClient
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
