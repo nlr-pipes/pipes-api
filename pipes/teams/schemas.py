@@ -70,8 +70,6 @@ class TeamUpdate(TeamCreate):
         members: List of users.
     """
 
-    pass
-
 
 class TeamRead(TeamCreate):
     """Team read schema.

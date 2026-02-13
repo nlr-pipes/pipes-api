@@ -66,10 +66,7 @@ class AccessGroupManager(AbstractObjectManager):
         u_doc_ids = [u_doc.id for u_doc in ag_members]
 
         ag_doc = AccessGroupDocument(
-            name=ag_create.name,
-            description=ag_create.description,
-            members=list(u_doc_ids),
-            created_by=created_by.id
+            name=ag_create.name, description=ag_create.description, members=list(u_doc_ids), created_by=created_by.id
         )
 
         try:
@@ -96,8 +93,8 @@ class AccessGroupManager(AbstractObjectManager):
 
     #     return ag_doc
 
-    async def get_accessgroup(self, ag_name: str) -> AccessGroupDocument:
-        query = {"name": ag_name}
+    async def get_accessgroup(self, ag_name: str, created_by: UserDocument) -> AccessGroupDocument:
+        query = {"name": ag_name, "created_by": created_by.id}
         ag_doc = await self.d.find_one(collection=AccessGroupDocument, query=query)
 
         if not ag_doc:
@@ -176,7 +173,7 @@ class AccessGroupManager(AbstractObjectManager):
         data["members"] = await self.get_accessgroup_members(ag_doc)
         return AccessGroupRead.model_validate(data)
 
-    async def delete_accessgroup(self, name: str, created_by: UserDocument) -> None:
+    async def delete_accessgroup(self, name: str, created_by: UserDocument) -> None:  # noqa: ARG002
         """Delete an access group by name"""
         # Delete the access group document
         await self.d.delete_one(

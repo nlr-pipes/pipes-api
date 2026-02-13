@@ -1,6 +1,7 @@
-import pytest
+from pipes.teams.schemas import TeamDocument
+from pipes.users.schemas import UserDocument
 
-from pipes.users.schemas import TeamDocument, UserDocument
+import pytest
 
 
 @pytest.fixture

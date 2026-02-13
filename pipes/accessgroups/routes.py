@@ -18,10 +18,7 @@ router = APIRouter()
 
 # Access Groups
 @router.post("/accessgroups", response_model=AccessGroupRead, status_code=201)
-async def create_accessgroup(
-    data: AccessGroupCreate,
-    user: UserDocument = Depends(auth_required),
-):
+async def create_accessgroup(data: AccessGroupCreate, user: UserDocument = Depends(auth_required)):
     """Create a new access group"""
     try:
         manager = AccessGroupManager()
@@ -49,9 +46,7 @@ async def create_accessgroup(
 
 
 @router.get("/accessgroups", response_model=list[AccessGroupRead])
-async def get_accessgroups(
-    user: UserDocument = Depends(auth_required),
-):
+async def get_accessgroups(user: UserDocument = Depends(auth_required)):
     """Get all access groups"""
     manager = AccessGroupManager()
     accessgroups = await manager.get_all_accessgroups(created_by=user)
@@ -59,10 +54,7 @@ async def get_accessgroups(
 
 
 @router.get("/accessgroups/detail", response_model=AccessGroupRead)
-async def get_accessgroup(
-    accessgroup: str,
-    user: UserDocument = Depends(auth_required),
-):
+async def get_accessgroup(accessgroup: str, user: UserDocument = Depends(auth_required)):
     """Get a specific access group by name"""
     try:
         manager = AccessGroupManager()
@@ -90,11 +82,7 @@ async def get_accessgroup(
 
 
 @router.patch("/accessgroups")
-async def update_accessgroup(
-    accessgroup: str,
-    data: AccessGroupUpdate,
-    user: UserDocument = Depends(auth_required),
-):
+async def update_accessgroup(accessgroup: str, data: AccessGroupUpdate, user: UserDocument = Depends(auth_required)):
     """Update access group"""
     try:
         manager = AccessGroupManager()
@@ -119,10 +107,7 @@ async def update_accessgroup(
 
 
 @router.delete("/accessgroups", status_code=204)
-async def delete_accessgroup(
-    accessgroup: str,
-    user: UserDocument = Depends(auth_required),
-):
+async def delete_accessgroup(accessgroup: str, user: UserDocument = Depends(auth_required)):
     """Delete a specific access group by name"""
     try:
         manager = AccessGroupManager()

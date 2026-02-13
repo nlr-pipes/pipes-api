@@ -2,17 +2,7 @@ from __future__ import annotations
 
 import logging, json
 from datetime import datetime
-
-from beanie import Document, PydanticObjectId
-from pymongo.errors import DuplicateKeyError
-
-from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
-from pipes.db.manager import AbstractObjectManager
-from pipes.accessgroups.schemas import (
-    AccessGroupCreate,
-    AccessGroupRead,
-    AccessGroupDocument,
-)
+from pipes.accessgroups.schemas import AccessGroupDocument
 from pipes.catalogmodels.schemas import (
     GeneralCatalogModelCreate,
     GeneralCatalogModelDocument,
@@ -25,8 +15,13 @@ from pipes.catalogmodels.ifac.schemas import (
 from pipes.catalogmodels.default.schemas import (
     DefaultCatalogModelMapper
 )
+from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
+from pipes.db.manager import AbstractObjectManager
 from pipes.users.schemas import UserDocument, UserRead
 from pipes.accessgroups.schemas import AccessGroupDocument, AccessGroupRead
+
+from beanie import PydanticObjectId
+from pymongo.errors import DuplicateKeyError
 
 logger = logging.getLogger(__name__)
 

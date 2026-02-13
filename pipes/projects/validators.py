@@ -1,6 +1,6 @@
 from __future__ import annotations
+
 from datetime import datetime
-from pydantic import BaseModel
 from pipes.common.exceptions import (
     ContextValidationError,
     DomainValidationError,
@@ -8,10 +8,12 @@ from pipes.common.exceptions import (
 )
 from pipes.common.validators import ContextValidator, DomainValidator
 from pipes.db.document import DocumentDB
-from pipes.projects.contexts import ProjectSimpleContext, ProjectDocumentContext
+from pipes.projectruns.schemas import ProjectRunRead
+from pipes.projects.contexts import ProjectDocumentContext, ProjectSimpleContext
 from pipes.projects.schemas import ProjectCreate, ProjectDocument, ProjectUpdate
 from pipes.users.schemas import UserDocument
-from pipes.projectruns.schemas import ProjectRunRead
+
+from pydantic import BaseModel
 
 
 class ProjectContextValidator(ContextValidator):
@@ -180,8 +182,8 @@ class ProjectUpdateDomainValidator(DomainValidator):
         p_update: ProjectUpdate,
         dependency_data: dict,
     ) -> ProjectUpdate:
-        """
-        Project scheduled start <= scheduled_end. Also, time should be greater than or equal to dependency_data[end].
+        """Project scheduled start <= scheduled_end. Also, time should be greater than or equal to
+        dependency_data[end].
         """
         if p_update.scheduled_end < p_update.scheduled_start:
             raise DomainValidationError(
@@ -206,11 +208,7 @@ class ProjectUpdateDomainValidator(DomainValidator):
             return p_update
 
         # Extract just the names from p_update.scenarios
-        update_scenario_names = (
-            {scenario.name for scenario in p_update.scenarios}
-            if p_update.scenarios
-            else set()
-        )
+        update_scenario_names = {scenario.name for scenario in p_update.scenarios} if p_update.scenarios else set()
         dependent_scenario_names = set(dependency_data["scenarios"])
 
         # Check if update_scenario_names is a superset of dependent_scenario_names

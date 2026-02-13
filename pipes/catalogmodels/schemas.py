@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.users.schemas import UserCreate, UserRead
 
 import pymongo
-from pymongo import IndexModel
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator, ConfigDict
-
-from pipes.users.schemas import UserRead, UserCreate
-from pipes.accessgroups.schemas import AccessGroupRead
 
 
 class GeneralCatalogModelCreate(BaseModel, extra="allow"):
@@ -55,6 +54,11 @@ class GeneralCatalogModelCreate(BaseModel, extra="allow"):
         title="other",
         default={},
         description="other metadata info about the model in dictionary",
+    )
+    access_group: Sequence[str] = Field(
+        title="access_group",
+        default=[],
+        description="List of access group names that have access to this model",
     )
 
     @field_validator("description", mode="before")
@@ -209,7 +213,7 @@ class GeneralCatalogModelDocument(GeneralCatalogModelCreate, Document):
     class Settings:
         name = "catalogmodels"
         indexes = [
-            IndexModel(
+            pymongo.IndexModel(
                 [
                     ("name", pymongo.ASCENDING),
                 ],

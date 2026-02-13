@@ -233,8 +233,6 @@ class CatalogDatasetUpdate(CatalogDatasetCreate):
         access_group: A group of users that has access to this model.
     """
 
-    pass
-
 
 class CatalogDatasetRead(CatalogDatasetCreate):
     """Dataset read schema.

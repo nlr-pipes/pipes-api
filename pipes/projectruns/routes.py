@@ -157,8 +157,6 @@ async def delete_projectrun(
             detail=str(e),
         )
 
-    return None
-
 
 @router.put("/projectruns", response_model=ProjectRunRead)
 async def update_projectrun(

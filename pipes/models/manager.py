@@ -237,10 +237,9 @@ class ModelManager(AbstractObjectManager):
                 raise DocumentDoesNotExist(
                     f"Model '{name}' not found in project '{project_name}', project run '{projectrun_name}'",
                 )
-            else:
-                raise DocumentDoesNotExist(
-                    f"Model '{name}' not found in project '{project_name}'",
-                )
+            raise DocumentDoesNotExist(
+                f"Model '{name}' not found in project '{project_name}'",
+            )
 
         return model_doc
 

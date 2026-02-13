@@ -5,7 +5,6 @@ from pipes.tasks.schemas import TaskCreate
 
 
 class TaskDomainValidator(DomainValidator):
-
     def __init__(self, context) -> None:
         self.context = context
 
