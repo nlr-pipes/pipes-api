@@ -77,7 +77,7 @@ async def update_catalog_model(
         ag_read_list = []
         for ag_name in data.access_group:
             try:
-                ag_doc = await ag_manager.get_accessgroup(ag_name)
+                ag_doc = await ag_manager.get_accessgroup(ag_name, created_by=user)
             except DocumentDoesNotExist:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

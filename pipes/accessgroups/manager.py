@@ -93,8 +93,8 @@ class AccessGroupManager(AbstractObjectManager):
 
     #     return ag_doc
 
-    async def get_accessgroup(self, ag_name: str, created_by: UserDocument | None = None) -> AccessGroupDocument:
-        query = {"name": ag_name} if created_by is None else {"name": ag_name, "created_by": created_by.id}
+    async def get_accessgroup(self, ag_name: str, created_by: UserDocument) -> AccessGroupDocument:
+        query = {"name": ag_name, "created_by": created_by.id}
         ag_doc = await self.d.find_one(collection=AccessGroupDocument, query=query)
 
         if not ag_doc:
