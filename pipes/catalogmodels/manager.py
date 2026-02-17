@@ -27,8 +27,9 @@ logger = logging.getLogger(__name__)
 
 schemas = {
     "IFAC": {"1.0": IFACCatalogModelMapper},
-    "Default": {"1.0":DefaultCatalogModelMapper},
+    "Default": {"1.0": DefaultCatalogModelMapper},
 }
+
 
 class GeneralCatalogModelManager(AbstractObjectManager):
     """Manager for catalog model operations"""
@@ -39,15 +40,15 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         user: UserDocument,
     ) -> GeneralCatalogModelDocument:
         if m_create.catalog_schema is not None and m_create.schema_version is not None:
-            if m_create.catalog_schema not in schemas or m_create.schema_version not in schemas[m_create.catalog_schema]:
+            if m_create.catalog_schema not in schemas or m_create.schema_version not in schemas[m_create.catalog_schema]:  # noqa: E501
                 raise DocumentAlreadyExists(
                     f"Catalog schema '{m_create.catalog_schema}' version '{m_create.schema_version}' does not exist.",
                 )
-            try: 
-                schemas[m_create.catalog_schema][m_create.schema_version]['create_model'].model_validate(m_create.model_dump())
+            try:
+                schemas[m_create.catalog_schema][m_create.schema_version]["create_model"].model_validate(m_create.model_dump())
             except Exception as e:
                 raise DocumentAlreadyExists(
-                    f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema version {m_create.schema_version}: {e}",
+                    f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema version {m_create.schema_version}: {e}",  # noqa: E501
                 )
         else:
             raise DocumentAlreadyExists(
@@ -199,7 +200,18 @@ class GeneralCatalogModelManager(AbstractObjectManager):
     ) -> GeneralCatalogModelDocument:
         """Update an existing catalog model"""
         # Find the model
-        query = {"name": model_name, "created_by": user.id}
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+        query = {
+            "name": model_name,
+            "$or": [
+                {"created_by": user.id},
+                {"access_group": {"$in": access_group_ids}},
+            ],
+        }
         cm_doc = await self.d.find_one(
             collection=GeneralCatalogModelDocument,
             query=query,
@@ -210,14 +222,14 @@ class GeneralCatalogModelManager(AbstractObjectManager):
             )
 
         cm_data = cm_doc.model_dump()
-        catalog_schema = cm_data['catalog_schema']
-        schema_version = cm_data['schema_version']
+        catalog_schema = cm_data["catalog_schema"]
+        schema_version = cm_data["schema_version"]
         if catalog_schema not in schemas or schema_version not in schemas[catalog_schema]:
             raise DocumentAlreadyExists(
                 f"Catalog schema '{catalog_schema}' version '{schema_version}' does not exist.",
             )
-        try: 
-            schemas[catalog_schema][schema_version]['update_model'].model_validate(m_update.model_dump())
+        try:
+            schemas[catalog_schema][schema_version]["update_model"].model_validate(m_update.model_dump())
         except Exception as e:
             raise DocumentAlreadyExists(
                 f"Model '{m_update.name}' does not conform to {catalog_schema} schema version {schema_version}: {e}",

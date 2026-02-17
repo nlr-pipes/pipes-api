@@ -47,7 +47,17 @@ class DefaultCatalogModelCreate(BaseModel):
         other: Other metadata info about the model in dictionary.
         access_group: A group of users that has access to this model.
     """
-
+    catalog_schema: str = Field(
+        title="catalog_schema",
+        description="Catalog specsheet schema identifier. [Options: Default, IFAC]').",
+        # TODO: add a check here for the acceptable options
+    )
+    schema_version: str = Field(
+        title="schema_version",
+        default=None,
+        description="Schema version this specsheet was authored against (e.g. '1.0').",
+        # TODO: add default values based on schema; If IFAC, schema_version = 1.0 (for now)
+    )
     name: str = Field(
         title="model_catalog",
         min_length=1,
@@ -115,7 +125,17 @@ class DefaultCatalogModelUpdate(DefaultCatalogModelCreate):
         other: Other metadata info about the model in dictionary.
         access_group: A group of users that has access to this model.
     """
-
+    catalog_schema: str | None = Field(
+        title="catalog_schema",
+        description="Catalog specsheet schema identifier. [Options: Default, IFAC]').",
+        # TODO: add a check here for the acceptable options
+    )
+    schema_version: str | None = Field(
+        title="schema_version",
+        default=None,
+        description="Schema version this specsheet was authored against (e.g. '1.0').",
+        # TODO: add default values based on schema; If IFAC, schema_version = 1.0 (for now)
+    )
     name: Optional[str] = Field(
         title="model_catalog",
         min_length=1,

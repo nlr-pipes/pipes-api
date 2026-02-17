@@ -5,10 +5,12 @@ from datetime import datetime
 import pymongo
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
+from collections.abc import Sequence
 from pymongo import IndexModel
 
 from pipes.common.schemas import SourceCode
 from pipes.users.schemas import UserRead
+from pipes.accessgroups.schemas import AccessGroupRead
 
 
 class TemporalInfo(BaseModel):
@@ -199,10 +201,10 @@ class CatalogDatasetCreate(BaseModel):
         default="",
         description="The resource URL for this dataset",
     )
-    access_group: list[EmailStr] = Field(
+    access_group: Sequence[str] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group names that have access to this model",
     )
     model_config = ConfigDict(protected_namespaces=())
 
@@ -232,6 +234,107 @@ class CatalogDatasetUpdate(CatalogDatasetCreate):
         resource_url: The resource URL for this dataset.
         access_group: A group of users that has access to this model.
     """
+    name: str | None = Field(
+        title="name",
+        default=None,
+        description="A short name",
+    )
+    display_name: str | None = Field(
+        title="display_name",
+        default=None,
+        description="The dataset display name",
+    )
+    description: str | None = Field(
+        title="description",
+        default=None,
+        description="The description of the scheduled dataset",
+    )
+    version: str | None = Field(
+        title="version",
+        default=None,
+        description="Dataset version",
+    )
+    previous_version: str | None = Field(
+        title="name of previous version of dataset path",
+        default=None,
+        description="Previous version of this dataset",
+    )
+    hash_value: str | None = Field(
+        title="hash_value",
+        default=None,
+        description="The hash value of this dataset used for integrity check.",
+    )
+    data_format: str | None = Field(
+        title="data_format",
+        default=None,
+        description="data format, or a list of formats separated by commas",
+    )
+    schema_info: dict | None = Field(
+        title="schema_info",
+        default=None,
+        description="The schema description of the dataset",
+    )
+    location: DatasetLocation | None = Field(
+        title="location",
+        default=None,
+        description="The dataset location on data system",
+    )
+    weather_years: list[int] | None = Field(
+        title="weather_years",
+        default=None,
+        description="The weather year(s) of the dataset",
+    )
+    model_years: list[int] | None = Field(
+        title="model_years",
+        default=None,
+        description="The model year(s) of the dataset",
+    )
+    units: list[str] | None = Field(
+        title="units",
+        default=None,
+        description="The units of the dataset",
+    )
+    temporal_info: TemporalInfo | None = Field(
+        title="temporal_info",
+        default_factory=TemporalInfo,
+        description="The temporal metadata of the dataset",
+    )
+    spatial_info: SpatialInfo | None = Field(
+        title="spatial_info",
+        default_factory=SpatialInfo,
+        description="The spatial metadata of the dataset",
+    )
+    scenarios: list[str] | None = Field(
+        title="scenarios",
+        default=None,
+        description="The list of scenario names the dataset relates to",
+    )
+    sensitivities: list[str] | None = Field(
+        title="sensitivities",
+        default=None,
+        description="The sensitivities of the dataset",
+    )
+    source_code: SourceCode | None = Field(
+        title="source_code",
+        default_factory=SourceCode,
+        description="The source code that produces the dataset",
+    )
+    relevant_links: list[str] | None = Field(
+        title="relevant_links",
+        default=None,
+        description="Relevant links to this dataset",
+    )
+    resource_url: str | None = Field(
+        title="resource_url",
+        default=None,
+        description="The resource URL for this dataset",
+    )
+    access_group: Sequence[str] | None = Field(
+        title="access_group",
+        default=None,
+        description="List of access group names that have access to this model",
+    )
+    model_config = ConfigDict(protected_namespaces=())
 
 
 class CatalogDatasetRead(CatalogDatasetCreate):
@@ -269,6 +372,11 @@ class CatalogDatasetRead(CatalogDatasetCreate):
     created_by: UserRead = Field(
         title="created_by",
         description="user who created the model in catalog",
+    )
+    access_group: list[AccessGroupRead] = Field(
+        title="access_group",
+        default=[],
+        description="List of access groups that have access to this model",
     )
 
 

@@ -451,7 +451,7 @@ class ConfigSchema(BaseModel):
 class IFACCatalogModelCreate(BaseModel):
     catalog_schema: str = Field(
         title="catalog_schema",
-        description="Catalog specsheet schema identifier. [Options: PIPES, IFAC]').",
+        description="Catalog specsheet schema identifier. [Options: Default, IFAC]').",
         # TODO: add a check here for the acceptable options
     )
     schema_version: str = Field(
@@ -622,7 +622,7 @@ class IFACCatalogModelUpdate(IFACCatalogModelCreate):
     catalog_schema: Optional[str] = Field(
         title="catalog_schema",
         default=None,
-        description="Catalog specsheet schema identifier. [Options: PIPES, IFAC]').",
+        description="Catalog specsheet schema identifier. [Options: Default, IFAC]').",
         # TODO: add a check here for the acceptable options
     )
     schema_version: Optional[str] = Field(

@@ -14,6 +14,7 @@ from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
 from pipes.users.schemas import UserDocument, UserRead
 
+from beanie import PydanticObjectId
 from pymongo.errors import DuplicateKeyError
 
 logger = logging.getLogger(__name__)
@@ -135,12 +136,23 @@ class CatalogDatasetManager(AbstractObjectManager):
         created_by_doc = await UserDocument.get(data["created_by"])
         data["created_by"] = UserRead.model_validate(created_by_doc.model_dump())
 
-        user_emails = []
-        for user_id in data["access_group"]:
-            user_doc = await UserDocument.get(user_id)
-            if user_doc:
-                user_emails.append(user_doc.email)
-        data["access_group"] = user_emails
+        access_group_list = []
+        for access_group_id in data["access_group"]:
+            print(access_group_id)
+            access_group_doc = await AccessGroupDocument.get(access_group_id)
+            if access_group_doc:
+                ag_dict = access_group_doc.model_dump()
+                member_objs = []
+                # Convert member IDs to UserRead objects
+                for user_id in ag_dict["members"]:
+                    if isinstance(user_id, PydanticObjectId):
+                        user_doc = await UserDocument.get(user_id)
+                        if user_doc:
+                            user_read = UserRead.model_validate(user_doc.model_dump())
+                            member_objs.append(user_read.model_dump())
+                ag_dict["members"] = member_objs
+                access_group_list.append(ag_dict)
+        data["access_group"] = access_group_list
         return CatalogDatasetRead.model_validate(data)
 
     async def get_dataset(
@@ -184,7 +196,19 @@ class CatalogDatasetManager(AbstractObjectManager):
     ) -> CatalogDatasetRead:
         """Update an existing catalog dataset"""
         # Find the dataset
-        query = {"name": dataset_name, "created_by": user.id}
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+
+        query = {
+            "name": dataset_name,
+            "$or": [
+                {"created_by": user.id},
+                {"access_group": {"$in": access_group_ids}},
+            ],
+        }
         cd_doc = await self.d.find_one(
             collection=CatalogDatasetDocument,
             query=query,
@@ -197,15 +221,6 @@ class CatalogDatasetManager(AbstractObjectManager):
         # Update fields
         update_data = d_update.model_dump(exclude_unset=True)
         if update_data:
-            # Convert access_group emails to user IDs if present
-            if update_data.get("access_group"):
-                access_group_ids = []
-                for email in update_data["access_group"]:
-                    user_doc = await UserDocument.find_one({"email": email})
-                    if user_doc:
-                        access_group_ids.append(user_doc.id)
-                update_data["access_group"] = access_group_ids
-
             # Ensure location is a DatasetLocation object if present
             if "location" in update_data and update_data["location"] is not None:
                 if isinstance(update_data["location"], dict):
