@@ -281,5 +281,5 @@ DefaultCatalogModelMapper = {
     "create_model": DefaultCatalogModelCreate,
     "update_model": DefaultCatalogModelUpdate,
     "read_model": DefaultCatalogModelRead,
-    "document_model": DefaultCatalogModelDocument
+    "document_model": DefaultCatalogModelDocument,
 }

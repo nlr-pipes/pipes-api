@@ -944,5 +944,5 @@ IFACCatalogModelMapper = {
     "create_model": IFACCatalogModelCreate,
     "update_model": IFACCatalogModelUpdate,
     "read_model": IFACCatalogModelRead,
-    "document_model": IFACCatalogModelDocument
+    "document_model": IFACCatalogModelDocument,
 }
