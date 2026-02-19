@@ -871,10 +871,11 @@ class IFACCatalogModelDocument(IFACCatalogModelCreate, Document):
             ),
         ]
 
+
 IFACCatalogModelMapper = {
     # Mapper to allow for the GeneralCatalogModelManager to interact with IFAC-specific schemas and documents
-    'create_model' : IFACCatalogModelCreate,
-    'update_model' : IFACCatalogModelUpdate,
-    'read_model' : IFACCatalogModelRead,
-    'document_model' : IFACCatalogModelDocument
+    "create_model": IFACCatalogModelCreate,
+    "update_model": IFACCatalogModelUpdate,
+    "read_model": IFACCatalogModelRead,
+    "document_model": IFACCatalogModelDocument
 }

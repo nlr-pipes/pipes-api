@@ -277,9 +277,11 @@ class DefaultCatalogModelDocument(DefaultCatalogModelCreate, Document):
             ),
         ]
 
-class DefaultCatalogModelMapper():
+
+DefaultCatalogModelMapper = {
     # Mapper to allow for the GeneralCatalogModelManager to interact with default schemas and documents
-    create_model : DefaultCatalogModelCreate
-    update_model : DefaultCatalogModelUpdate
-    read_model : DefaultCatalogModelRead
-    document_model : DefaultCatalogModelDocument
+    "create_model": DefaultCatalogModelCreate,
+    "update_model": DefaultCatalogModelUpdate,
+    "read_model": DefaultCatalogModelRead,
+    "document_model": DefaultCatalogModelDocument
+}
