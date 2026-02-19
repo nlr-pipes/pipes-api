@@ -1,13 +1,6 @@
 from __future__ import annotations
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
-
-from pipes.common.exceptions import (
-    DocumentAlreadyExists,
-    DocumentDoesNotExist,
-    DomainValidationError,
-)
 from pipes.accessgroups.manager import AccessGroupManager
 from pipes.catalogmodels.manager import GeneralCatalogModelManager
 from pipes.catalogmodels.schemas import (
@@ -15,8 +8,15 @@ from pipes.catalogmodels.schemas import (
     GeneralCatalogModelRead,
     GeneralCatalogModelUpdate,
 )
+from pipes.common.exceptions import (
+    DocumentAlreadyExists,
+    DocumentDoesNotExist,
+    DomainValidationError,
+)
 from pipes.users.auth import auth_required
 from pipes.users.schemas import UserDocument
+
+from fastapi import APIRouter, Depends, HTTPException, status
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -30,6 +30,7 @@ async def get_catalog_model(
     manager = GeneralCatalogModelManager()
     catalogmodel = await manager.get_model(model_name, user)
     return catalogmodel
+
 
 @router.post("/catalogmodel/create", response_model=GeneralCatalogModelRead, status_code=201)
 async def create_catalog_model(
@@ -51,6 +52,7 @@ async def create_catalog_model(
     mr_doc = await manager.read_model(mc_doc)
     return mr_doc
 
+
 @router.get("/catalogmodels", response_model=list[GeneralCatalogModelRead], status_code=200)
 async def get_catalog_models(
     user: UserDocument = Depends(auth_required),
@@ -58,6 +60,7 @@ async def get_catalog_models(
     manager = GeneralCatalogModelManager()
     catalogmodels = await manager.get_models(user)
     return catalogmodels
+
 
 @router.patch("/catalogmodel/update", response_model=GeneralCatalogModelRead, status_code=200)
 async def update_catalog_model(
@@ -97,6 +100,7 @@ async def update_catalog_model(
             detail=str(e),
         )
     return updated_model
+
 
 @router.delete("/catalogmodel/delete", status_code=204)
 async def delete_catalog_model(
