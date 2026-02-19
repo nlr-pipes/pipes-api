@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.common.schemas import SourceCode
+from pipes.users.schemas import UserRead
 
 import pymongo
 from beanie import Document, PydanticObjectId
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
-from collections.abc import Sequence
+from pydantic import BaseModel, ConfigDict, Field
 from pymongo import IndexModel
-
-from pipes.common.schemas import SourceCode
-from pipes.users.schemas import UserRead
-from pipes.accessgroups.schemas import AccessGroupRead
 
 
 class TemporalInfo(BaseModel):
@@ -234,6 +233,7 @@ class CatalogDatasetUpdate(CatalogDatasetCreate):
         resource_url: The resource URL for this dataset.
         access_group: A group of users that has access to this model.
     """
+
     name: str | None = Field(
         title="name",
         default=None,
