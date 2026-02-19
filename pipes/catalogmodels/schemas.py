@@ -3,15 +3,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import datetime
 from pipes.accessgroups.schemas import AccessGroupRead
-from pipes.users.schemas import UserCreate, UserRead
+from pipes.users.schemas import UserRead
 
 import pymongo
 from beanie import Document, PydanticObjectId
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator
 
 
 class GeneralCatalogModelCreate(BaseModel, extra="allow"):
-    """Baseline model schema for model catalog entries. All catalog model entries will validate against this schema first before validating against specific schemas.
+    """Baseline model schema for model catalog entries. All catalog model entries will validate
+    against this schema first before validating against specific schemas.
 
     Attributes:
         name: The model name.
@@ -151,6 +152,7 @@ class GeneralCatalogModelRead(GeneralCatalogModelCreate):
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
     """
+
     id: PydanticObjectId = Field(exclude=True)
 
     created_at: datetime = Field(
@@ -166,6 +168,7 @@ class GeneralCatalogModelRead(GeneralCatalogModelCreate):
         default=[],
         description="List of access groups that have access to this model",
     )
+
 
 class GeneralCatalogModelDocument(GeneralCatalogModelCreate, Document):
     """Catalog model document.

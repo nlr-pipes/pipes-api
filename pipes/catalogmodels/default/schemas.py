@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pydantic import EmailStr
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.users.schemas import UserCreate, UserRead
 
 import pymongo
-from pymongo import IndexModel
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator
-
-from typing import List, Optional, Dict
-
-from pipes.users.schemas import UserRead, UserCreate
-from pipes.accessgroups.schemas import AccessGroupRead
+from pymongo import IndexModel
 
 
 class ModelingTeam(BaseModel):
@@ -47,6 +43,7 @@ class DefaultCatalogModelCreate(BaseModel):
         other: Other metadata info about the model in dictionary.
         access_group: A group of users that has access to this model.
     """
+
     catalog_schema: str = Field(
         title="catalog_schema",
         description="Catalog specsheet schema identifier. [Options: Default, IFAC]').",
@@ -125,6 +122,7 @@ class DefaultCatalogModelUpdate(DefaultCatalogModelCreate):
         other: Other metadata info about the model in dictionary.
         access_group: A group of users that has access to this model.
     """
+
     catalog_schema: str | None = Field(
         title="catalog_schema",
         description="Catalog specsheet schema identifier. [Options: Default, IFAC]').",
@@ -136,47 +134,47 @@ class DefaultCatalogModelUpdate(DefaultCatalogModelCreate):
         description="Schema version this specsheet was authored against (e.g. '1.0').",
         # TODO: add default values based on schema; If IFAC, schema_version = 1.0 (for now)
     )
-    name: Optional[str] = Field(
+    name: str | None = Field(
         title="model_catalog",
         min_length=1,
         description="the model name",
     )
-    display_name: Optional[str] = Field(
+    display_name: str | None = Field(
         title="display_name",
         default=None,
         description="Display name for this model vertex.",
     )
-    type: Optional[str] = Field(
+    type: str | None = Field(
         title="type",
         default=None,
         description="Type of model to use in graphic headers (e.g, 'Capacity Expansion')",
     )
-    description: Optional[list[str]] = Field(
+    description: list[str] | None = Field(
         title="description",
         default=None,
         description="Description of the model",
     )
-    assumptions: Optional[list[str]] = Field(
+    assumptions: list[str] | None = Field(
         title="assumptions",
         description="List of model assumptions",
         default=[],
     )
-    requirements: Optional[dict] = Field(
+    requirements: dict | None = Field(
         title="requirements",
         default={},
         description="Model specific requirements (if different from Project and Project-Run)",
     )
-    expected_scenarios: Optional[list[str]] = Field(
+    expected_scenarios: list[str] | None = Field(
         title="expected_scenarios",
         description="List of expected model scenarios",
         default=[],
     )
-    modeling_team: Optional[ModelingTeam] = Field(
+    modeling_team: ModelingTeam | None = Field(
         title="modeling_team",
         description="Information about the modeling team",
         default=None,
     )
-    other: Optional[dict] = Field(
+    other: dict | None = Field(
         title="other",
         default={},
         description="other metadata info about the model in dictionary",
@@ -283,5 +281,5 @@ DefaultCatalogModelMapper = {
     "create_model": DefaultCatalogModelCreate,
     "update_model": DefaultCatalogModelUpdate,
     "read_model": DefaultCatalogModelRead,
-    "document_model": DefaultCatalogModelDocument
+    "document_model": DefaultCatalogModelDocument,
 }
