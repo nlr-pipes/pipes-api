@@ -1,24 +1,19 @@
 from __future__ import annotations
 
-import logging, json
+import logging
 from datetime import datetime
 from pipes.accessgroups.schemas import AccessGroupDocument
+from pipes.catalogmodels.default.schemas import DefaultCatalogModelMapper
+from pipes.catalogmodels.ifac.schemas import IFACCatalogModelMapper
 from pipes.catalogmodels.schemas import (
     GeneralCatalogModelCreate,
     GeneralCatalogModelDocument,
     GeneralCatalogModelRead,
     GeneralCatalogModelUpdate,
 )
-from pipes.catalogmodels.ifac.schemas import (
-    IFACCatalogModelMapper
-)
-from pipes.catalogmodels.default.schemas import (
-    DefaultCatalogModelMapper
-)
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
 from pipes.users.schemas import UserDocument, UserRead
-from pipes.accessgroups.schemas import AccessGroupDocument, AccessGroupRead
 
 from beanie import PydanticObjectId
 from pymongo.errors import DuplicateKeyError
@@ -40,12 +35,17 @@ class GeneralCatalogModelManager(AbstractObjectManager):
         user: UserDocument,
     ) -> GeneralCatalogModelDocument:
         if m_create.catalog_schema is not None and m_create.schema_version is not None:
-            if m_create.catalog_schema not in schemas or m_create.schema_version not in schemas[m_create.catalog_schema]:  # noqa: E501
+            if (
+                m_create.catalog_schema not in schemas
+                or m_create.schema_version not in schemas[m_create.catalog_schema]
+            ):
                 raise DocumentAlreadyExists(
                     f"Catalog schema '{m_create.catalog_schema}' version '{m_create.schema_version}' does not exist.",
                 )
             try:
-                schemas[m_create.catalog_schema][m_create.schema_version]["create_model"].model_validate(m_create.model_dump())
+                schemas[m_create.catalog_schema][m_create.schema_version]["create_model"].model_validate(
+                    m_create.model_dump()
+                )
             except Exception as e:
                 raise DocumentAlreadyExists(
                     f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema version {m_create.schema_version}: {e}",  # noqa: E501
@@ -84,7 +84,7 @@ class GeneralCatalogModelManager(AbstractObjectManager):
             created_by=user.id,
             last_modified=current_time,
             modified_by=user.id,
-            **m_create.model_dump(exclude_none=True)
+            **m_create.model_dump(exclude_none=True),
         )
         # Create document
         try:
