@@ -318,12 +318,12 @@ class ToolMaturity(BaseModel):
             by an external user.
         """,
     )
-    usability_via_gui: bool = Field(
-        title="usability_via_gui",
+    usability_via_GUI: bool = Field(  # noqa: N815
+        title="usability_via_GUI",
         description="Is there a GUI?",
     )
-    usability_via_cli: bool = Field(
-        title="usability_via_cli",
+    usability_via_CLI: bool = Field(  # noqa: N815
+        title="usability_via_CLI",
         description="Is there a CLI?",
     )
     accessible_for_external_users: bool = Field(
