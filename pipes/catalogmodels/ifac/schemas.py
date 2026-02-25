@@ -298,12 +298,12 @@ class ToolMaturity(BaseModel):
         title="input_output_interoperability",
         description="Is there an API for scripted coordination with other tools?",
     )
-    data_accessability_public: bool = Field(
-        title="data_accessability_public",
+    data_accessibility_public: bool = Field(
+        title="data_accessibility_public",
         description="Can a study be performed using only publicly available data?",
     )
-    data_accessability_proprietary: bool = Field(
-        title="data_accessability_proprietary",
+    data_accessibility_proprietary: bool = Field(
+        title="data_accessibility_proprietary",
         description="Can a study be performed with data that a utility has access to?",
     )
     secure_for_sensitive_data_handling: bool = Field(
