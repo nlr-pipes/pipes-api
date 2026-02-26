@@ -12,41 +12,43 @@ from pipes.catalogdatasets.routes import router as catalogdatasets_router
 from pipes.catalogdatasets.schemas import CatalogDatasetDocument
 
 # Catalog Models
+from pipes.catalogmodels.default.schemas import DefaultCatalogModelDocument
+from pipes.catalogmodels.ifac.schemas import IFACCatalogModelDocument
 from pipes.catalogmodels.routes import router as catalogmodels_router
-from pipes.catalogmodels.schemas import CatalogModelDocument
+from pipes.catalogmodels.schemas import GeneralCatalogModelDocument
 
 # Settings
 from pipes.config.settings import settings
-from pipes.datasets.routes import router as datasets_router
 
 # Datasets
+from pipes.datasets.routes import router as datasets_router
 from pipes.datasets.schemas import DatasetDocument
-from pipes.handoffs.routes import router as handoffs_router
 
 # Handoffs
+from pipes.handoffs.routes import router as handoffs_router
 from pipes.handoffs.schemas import HandoffDocument
 
 # Health
 from pipes.health.routes import router as health_router
-from pipes.modelruns.routes import router as modelruns_router
 
 # Modelruns
+from pipes.modelruns.routes import router as modelruns_router
 from pipes.modelruns.schemas import ModelRunDocument
 
 # Models
 from pipes.models.routes import router as models_router
 from pipes.models.schemas import ModelDocument
-from pipes.projectruns.routes import router as projectruns_router
 
 # Projectruns
+from pipes.projectruns.routes import router as projectruns_router
 from pipes.projectruns.schemas import ProjectRunDocument
-from pipes.projects.routes import router as projects_router
 
 # Projects
+from pipes.projects.routes import router as projects_router
 from pipes.projects.schemas import ProjectDocument
-from pipes.tasks.routes import router as tasks_router
 
 # Tasks
+from pipes.tasks.routes import router as tasks_router
 from pipes.tasks.schemas import TaskDocument
 
 # Teams
@@ -100,7 +102,9 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             TaskDocument,
             TeamDocument,
             UserDocument,
-            CatalogModelDocument,
+            GeneralCatalogModelDocument,
+            IFACCatalogModelDocument,
+            DefaultCatalogModelDocument,
             CatalogDatasetDocument,
             AccessGroupDocument,
         ],

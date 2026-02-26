@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.common.schemas import SourceCode
+from pipes.common.utilities import make_optional_model
+from pipes.users.schemas import UserRead
 
 import pymongo
 from beanie import Document, PydanticObjectId
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
+from pydantic import BaseModel, ConfigDict, Field
 from pymongo import IndexModel
-
-from pipes.common.schemas import SourceCode
-from pipes.users.schemas import UserRead
 
 
 class TemporalInfo(BaseModel):
@@ -199,16 +201,20 @@ class CatalogDatasetCreate(BaseModel):
         default="",
         description="The resource URL for this dataset",
     )
-    access_group: list[EmailStr] = Field(
+    access_group: Sequence[str] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group names that have access to this model",
     )
     model_config = ConfigDict(protected_namespaces=())
 
 
-class CatalogDatasetUpdate(CatalogDatasetCreate):
+CatalogDatasetUpdate = make_optional_model(
+    CatalogDatasetCreate,
+    "CatalogDatasetUpdate",
     """Catalog Dataset Update Schema.
+
+    All fields from CatalogDatasetCreate are available but optional.
 
     Attributes:
         name: A short name.
@@ -231,7 +237,8 @@ class CatalogDatasetUpdate(CatalogDatasetCreate):
         relevant_links: Relevant links to this dataset.
         resource_url: The resource URL for this dataset.
         access_group: A group of users that has access to this model.
-    """
+    """,
+)
 
 
 class CatalogDatasetRead(CatalogDatasetCreate):
@@ -269,6 +276,11 @@ class CatalogDatasetRead(CatalogDatasetCreate):
     created_by: UserRead = Field(
         title="created_by",
         description="user who created the model in catalog",
+    )
+    access_group: list[AccessGroupRead] = Field(
+        title="access_group",
+        default=[],
+        description="List of access groups that have access to this model",
     )
 
 

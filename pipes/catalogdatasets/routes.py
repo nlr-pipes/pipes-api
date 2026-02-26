@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from pipes.accessgroups.manager import AccessGroupManager
 from pipes.common.exceptions import (
     DocumentAlreadyExists,
     DocumentDoesNotExist,
@@ -84,6 +85,21 @@ async def update_catalog_dataset(
     user: UserDocument = Depends(auth_required),
 ):
     manager = CatalogDatasetManager()
+    # Convert access group names to IDs if provided
+    if data.access_group is not None:
+        ag_manager = AccessGroupManager()
+        ag_read_list = []
+        for ag_name in data.access_group:
+            try:
+                ag_doc = await ag_manager.get_accessgroup(ag_name, created_by=user)
+            except DocumentDoesNotExist:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Access group with name '{ag_name}' does not exist.",
+                )
+            # ag_read_list.append(await ag_manager.read_accessgroup(ag_doc))
+            ag_read_list.append(ag_doc.id)
+        data.access_group = ag_read_list
     try:
         updated_dataset = await manager.update_dataset(dataset_name, data, user)
     except (

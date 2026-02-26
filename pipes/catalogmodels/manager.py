@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from pipes.accessgroups.schemas import AccessGroupDocument
+from pipes.catalogmodels.default.schemas import DefaultCatalogModelMapper
+from pipes.catalogmodels.ifac.schemas import IFACCatalogModelMapper
 from pipes.catalogmodels.schemas import (
-    CatalogModelCreate,
-    CatalogModelDocument,
-    CatalogModelRead,
-    CatalogModelUpdate,
+    GeneralCatalogModelCreate,
+    GeneralCatalogModelDocument,
+    GeneralCatalogModelRead,
+    GeneralCatalogModelUpdate,
 )
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
@@ -18,29 +20,54 @@ from pymongo.errors import DuplicateKeyError
 
 logger = logging.getLogger(__name__)
 
+schemas = {
+    "IFAC": {"1.0": IFACCatalogModelMapper},
+    "Default": {"1.0": DefaultCatalogModelMapper},
+}
 
-class CatalogModelManager(AbstractObjectManager):
+
+class GeneralCatalogModelManager(AbstractObjectManager):
     """Manager for catalog model operations"""
 
     async def create_model(
         self,
-        m_create: CatalogModelCreate,
+        m_create: GeneralCatalogModelCreate,
         user: UserDocument,
-    ) -> CatalogModelDocument:
+    ) -> GeneralCatalogModelDocument:
+        if m_create.catalog_schema is not None and m_create.schema_version is not None:
+            if (
+                m_create.catalog_schema not in schemas
+                or m_create.schema_version not in schemas[m_create.catalog_schema]
+            ):
+                raise DocumentAlreadyExists(
+                    f"Catalog schema '{m_create.catalog_schema}' version '{m_create.schema_version}' does not exist.",
+                )
+            try:
+                schemas[m_create.catalog_schema][m_create.schema_version]["create_model"].model_validate(
+                    m_create.model_dump()
+                )
+            except Exception as e:
+                raise DocumentAlreadyExists(
+                    f"Model '{m_create.name}' does not conform to {m_create.catalog_schema} schema version {m_create.schema_version}: {e}",  # noqa: E501
+                )
+        else:
+            raise DocumentAlreadyExists(
+                f"Catalog schema and version must be provided for model '{m_create.name}'.",
+            )
         m_doc = await self._create_model_document(m_create, user)
         return m_doc
 
     async def _create_model_document(
         self,
-        m_create: CatalogModelCreate,
+        m_create: GeneralCatalogModelCreate,
         user: UserDocument,
-    ) -> CatalogModelDocument:
+    ) -> GeneralCatalogModelDocument:
         """Create a new model under given project and project run"""
 
         # Check if model already exists or not
         m_name = m_create.name
         m_doc_exits = await self.d.exists(
-            collection=CatalogModelDocument,
+            collection=GeneralCatalogModelDocument,
             query={
                 "name": m_name,
             },
@@ -51,21 +78,13 @@ class CatalogModelManager(AbstractObjectManager):
             )
         # object context
         current_time = datetime.now()
-        cm_doc = CatalogModelDocument(
+        cm_doc = GeneralCatalogModelDocument(
             # model information
-            name=m_name,
-            display_name=m_create.display_name,
-            type=m_create.type,
-            description=m_create.description,
-            assumptions=m_create.assumptions,
-            requirements=m_create.requirements,
-            expected_scenarios=m_create.expected_scenarios,
-            modeling_team=m_create.modeling_team,
-            other=m_create.other,
             created_at=current_time,
             created_by=user.id,
             last_modified=current_time,
             modified_by=user.id,
+            **m_create.model_dump(exclude_none=True),
         )
         # Create document
         try:
@@ -81,7 +100,7 @@ class CatalogModelManager(AbstractObjectManager):
         )
         return cm_doc
 
-    async def get_models(self, user: UserDocument) -> list[CatalogModelDocument]:
+    async def get_models(self, user: UserDocument) -> list[GeneralCatalogModelRead]:
         """Read a model from given model document"""
         # First, find all access groups where the user is a member
         user_access_groups = await self.d.find_all(
@@ -92,7 +111,7 @@ class CatalogModelManager(AbstractObjectManager):
 
         # Query for models where user is creator OR model is in user's access groups
         cm_docs = await self.d.find_all(
-            collection=CatalogModelDocument,
+            collection=GeneralCatalogModelDocument,
             query={
                 "$or": [
                     {"created_by": user.id},
@@ -109,7 +128,7 @@ class CatalogModelManager(AbstractObjectManager):
 
     async def read_model(
         self,
-        cm_doc: CatalogModelDocument,
+        cm_doc: GeneralCatalogModelDocument,
     ):
         """Retrieve a specific model from the database by name"""
         # Convert the document to a model document
@@ -118,6 +137,8 @@ class CatalogModelManager(AbstractObjectManager):
         data = cm_doc.model_dump()
         created_by_doc = await UserDocument.get(data["created_by"])
         data["created_by"] = UserRead.model_validate(created_by_doc.model_dump())
+        modified_by_doc = await UserDocument.get(data["modified_by"])
+        data["modified_by"] = UserRead.model_validate(modified_by_doc.model_dump())
 
         access_group_list = []
         for access_group_id in data["access_group"]:
@@ -136,13 +157,13 @@ class CatalogModelManager(AbstractObjectManager):
                 access_group_list.append(ag_dict)
 
         data["access_group"] = access_group_list
-        return CatalogModelRead.model_validate(data)
+        return GeneralCatalogModelRead.model_validate(data)
 
     async def get_model(
         self,
         model_name: str,
         user: UserDocument,
-    ) -> CatalogModelRead:
+    ) -> GeneralCatalogModelRead:
         """Get a specific model by name"""
         # First, find all access groups where the user is a member
         user_access_groups = await self.d.find_all(
@@ -160,7 +181,7 @@ class CatalogModelManager(AbstractObjectManager):
             ],
         }
         cm_doc = await self.d.find_one(
-            collection=CatalogModelDocument,
+            collection=GeneralCatalogModelDocument,
             query=query,
         )
         if not cm_doc:
@@ -174,14 +195,25 @@ class CatalogModelManager(AbstractObjectManager):
     async def update_model(
         self,
         model_name: str,
-        m_update: CatalogModelUpdate,
+        m_update: GeneralCatalogModelUpdate,
         user: UserDocument,
-    ) -> CatalogModelDocument:
+    ) -> GeneralCatalogModelDocument:
         """Update an existing catalog model"""
         # Find the model
-        query = {"name": model_name, "created_by": user.id}
+        user_access_groups = await self.d.find_all(
+            collection=AccessGroupDocument,
+            query={"members": user.id},
+        )
+        access_group_ids = [ag.id for ag in user_access_groups]
+        query = {
+            "name": model_name,
+            "$or": [
+                {"created_by": user.id},
+                {"access_group": {"$in": access_group_ids}},
+            ],
+        }
         cm_doc = await self.d.find_one(
-            collection=CatalogModelDocument,
+            collection=GeneralCatalogModelDocument,
             query=query,
         )
         if not cm_doc:
@@ -189,6 +221,19 @@ class CatalogModelManager(AbstractObjectManager):
                 f"Model '{model_name}' does not exist in catalog.",
             )
 
+        cm_data = cm_doc.model_dump()
+        catalog_schema = cm_data["catalog_schema"]
+        schema_version = cm_data["schema_version"]
+        if catalog_schema not in schemas or schema_version not in schemas[catalog_schema]:
+            raise DocumentAlreadyExists(
+                f"Catalog schema '{catalog_schema}' version '{schema_version}' does not exist.",
+            )
+        try:
+            schemas[catalog_schema][schema_version]["update_model"].model_validate(m_update.model_dump())
+        except Exception as e:
+            raise DocumentAlreadyExists(
+                f"Model '{m_update.name}' does not conform to {catalog_schema} schema version {schema_version}: {e}",
+            )
         # Update fields
         update_data = m_update.model_dump(exclude_unset=True, exclude_none=True)
         if update_data:
@@ -215,7 +260,7 @@ class CatalogModelManager(AbstractObjectManager):
         """Delete a specific model by name"""
         query = {"name": model_name, "created_by": user.id}
         cm_doc = await self.d.find_one(
-            collection=CatalogModelDocument,
+            collection=GeneralCatalogModelDocument,
             query=query,
         )
         if not cm_doc:
@@ -223,7 +268,7 @@ class CatalogModelManager(AbstractObjectManager):
                 f"Model '{model_name}' does not exist in catalog.",
             )
         await self.d.delete_one(
-            collection=CatalogModelDocument,
+            collection=GeneralCatalogModelDocument,
             query={"_id": cm_doc.id},
         )
         logger.info(
