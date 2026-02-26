@@ -138,7 +138,6 @@ class CatalogDatasetManager(AbstractObjectManager):
 
         access_group_list = []
         for access_group_id in data["access_group"]:
-            print(access_group_id)
             access_group_doc = await AccessGroupDocument.get(access_group_id)
             if access_group_doc:
                 ag_dict = access_group_doc.model_dump()
