@@ -3,11 +3,10 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from itertools import chain
-
-from pymongo.errors import DuplicateKeyError
+from pipes.common.constants import NodeLabel
 from pipes.common.exceptions import DocumentAlreadyExists, DocumentDoesNotExist
 from pipes.db.manager import AbstractObjectManager
-from pipes.common.constants import NodeLabel
+from pipes.projectruns.manager import ProjectRunManager
 from pipes.projects.contexts import ProjectDocumentContext
 from pipes.projects.schemas import (
     ProjectCreate,
@@ -19,16 +18,16 @@ from pipes.projects.validators import (
     ProjectDomainValidator,
     ProjectUpdateDomainValidator,
 )
-from pipes.projectruns.manager import ProjectRunManager
-from pipes.teams.schemas import TeamDocument, TeamBasicRead
+from pipes.teams.schemas import TeamBasicRead, TeamDocument
 from pipes.users.manager import UserManager
 from pipes.users.schemas import UserCreate, UserDocument, UserRead
+
+from pymongo.errors import DuplicateKeyError
 
 logger = logging.getLogger(__name__)
 
 
 class ProjectManager(AbstractObjectManager):
-
     __label__ = NodeLabel.Project.value
 
     async def create_project(
@@ -237,21 +236,9 @@ class ProjectManager(AbstractObjectManager):
                 "description": p_update.description,
                 "assumptions": p_update.assumptions,
                 "requirements": p_update.requirements,
-                "scenarios": (
-                    [s.model_dump() for s in p_update.scenarios]
-                    if p_update.scenarios
-                    else []
-                ),
-                "sensitivities": (
-                    [s.model_dump() for s in p_update.sensitivities]
-                    if p_update.sensitivities
-                    else []
-                ),
-                "milestones": (
-                    [m.model_dump() for m in p_update.milestones]
-                    if p_update.milestones
-                    else []
-                ),
+                "scenarios": ([s.model_dump() for s in p_update.scenarios] if p_update.scenarios else []),
+                "sensitivities": ([s.model_dump() for s in p_update.sensitivities] if p_update.sensitivities else []),
+                "milestones": ([m.model_dump() for m in p_update.milestones] if p_update.milestones else []),
                 "scheduled_start": p_update.scheduled_start,
                 "scheduled_end": p_update.scheduled_end,
                 "owner": p_owner.id,
@@ -275,11 +262,12 @@ class ProjectManager(AbstractObjectManager):
 
             if result.modified_count == 0:
                 logger.warning(
-                    f"Project '{project}' was matched but not modified - possibly no changes detected.",
+                    "Project '%s' was matched but not modified - possibly no changes detected.",
+                    project,
                 )
 
         except Exception as e:
-            logger.error(f"Failed to update project '{project}': {e}")
+            logger.error("Failed to update project '%s': %s", project, e)
             raise
 
         # Get the updated document
@@ -304,10 +292,7 @@ class ProjectManager(AbstractObjectManager):
             )
             logger.info("Project document '%s' deleted from documentdb", project)
         except Exception as e:
-            logger.error(
-                "Failed to delete project document from documentdb: %s",
-                str(e),
-            )
+            logger.error("Failed to delete project document from documentdb: %s", e)
             # Re-raise this error as document deletion is critical
             raise
 

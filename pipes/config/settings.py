@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
 __all__ = ["settings"]
@@ -59,6 +60,8 @@ def get_settings(env):
         f"Not a valid environment '{env}', please use 'local', 'dev', 'stage', or 'prod'",
     )
 
+
+load_dotenv()  # Load environment variables from .env file
 
 PIPES_ENV = os.getenv("PIPES_ENV", "local")
 

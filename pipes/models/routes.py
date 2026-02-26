@@ -228,8 +228,6 @@ async def delete_model(
             detail=str(e),
         )
 
-    return None
-
 
 @router.patch("/models", response_model=ModelRead)
 async def update_model(

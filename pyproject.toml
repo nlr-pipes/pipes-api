@@ -1,0 +1,247 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipes-api"
+dynamic = ["version"]
+description = "PIPES API for managing datasets, models, and project workflows"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "NLR PIPES Team"}
+]
+
+dependencies = [
+    "async-timeout==5.0.1",
+    "beanie==1.30.0",
+    "boto3==1.40.68",
+    "cryptography==46.0.4",
+    "email-validator==2.3.0",
+    "fastapi==0.128.0",
+    "pydantic-settings==2.12.0",
+    "pymongo==4.15.3",
+    "python-dateutil==2.9.0",
+    "python-jose==3.5.0",
+    "requests==2.32.5",
+    "shortuuid==1.0.13",
+    "uvicorn==0.38.0",
+    "ruff>=0.8.6,<0.15.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx==0.28.1",
+    "pre-commit==4.2.0",
+    "pytz==2024.2",
+    "tox==4.12.1",
+    "types-requests==2.32.0.20241016",
+]
+test = [
+    "pytest==8.3.4",
+    "pytest-cov==6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/nrel-pipes/pipes-api"
+Repository = "https://github.com/nrel-pipes/pipes-api.git"
+
+[tool.setuptools]
+packages = ["pipes"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pipes.version.__version__"}
+
+[tool.setuptools_scm]
+fallback_version = "9999"
+# Default git command uses "*[0-9]*", which breaks with cX.X.X tags.
+# This spec below forces setuptools_scm to look strictly for vX.X.X tags
+git_describe_command = [ "git", "describe", "--dirty", "--tags", "--long", "--match", "v*[0-9]*" ]
+version_file = "pipes/version.py"
+
+[tool.ruff]
+line-length = 119
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 119
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+preview = true
+select = [
+  "A", # flake8-builtins
+  "B", # flake8-bugbear
+  "ARG", # flake8-unused-arguments
+  "BLE", # flake8-blind-except
+  "C4", # flake8-comprehensions
+  "C90", # mccabe
+  "COM", # flake8-commas
+  "D", # pydocstyle
+  "E", # pycodestyle
+  "EM", # flake8-errmsg
+  "F", # Pyflakes
+  "FURB", # refurb
+  "FLY", #  flynt
+  "G", # flake8-logging-format
+  "I", # isort
+  "INP", # flake8-no-pep420
+  "ISC", # flake8-implicit-str-concat
+  "LOG", # flake8-logging
+  "N", # pep8-naming
+  "NPY", # numpy-specific
+  "PD", # pandas-vet
+  "PERF", # Perflint
+  "PIE", # flake8-pie
+  "PL", # Pylint
+  "PTH", # flake8-use-pathlib
+  "PYI", # flake8-pyi
+  "Q", # flake8-quotes
+  "RET", # flake8-return
+  "RSE", # flake8-raise
+  "RUF", # Ruff-specific rules
+  "S", # flake8-bandit
+  "SLF", # flake8-self
+  "SIM", # flake8-simplify
+  "TID", # flake8-tidy-imports (absolute imports)
+  "UP", # pyupgrade
+  "W", # Warning
+  "TRY", # tryceratops
+]
+ignore = [
+  "B028", # no-explicit-stacklevel
+  "COM812", # missing-trailing-comma (incompatible with formatter)
+  "D105", # undocumented-magic-method
+  "D205", # blank-line-after-summary
+  "D202", # no-blank-lines-after-function
+  "D210", # surrounded-whitespace
+  "D400", # first-line-should-end-with-a-period
+  "D401", # non-imperative-mood
+  "D403", # first-line-capitalized
+  "FURB140", # reimplemented-starmap
+  "I001", # unsorted-imports
+  "PYI024", # collections-named-tuple
+  "RUF012", # mutable-class-default
+  "RUF031", # incorrectly-parenthesized-tuple-in-subscript
+  "S101", # assert
+  "S324", # hashlib-insecure-hash-function
+  "S403", # suspicious-pickle-import
+  "PLR6301", # no-self-use (incompatible with Pylint) (considered for re-enabling in the future)
+  "SLF001", # private-member-access (incompatible with Pylint) (considered for re-enabling in the future)
+  "D107", # missing-docstring in __init__.py (considered for re-enabling in the future)
+  "B008", # Do not perform function calls in argument defaults (incompatible with Pydantic) (considered for re-enabling in the future)
+  "D103", # Undocumented public function (considered for re-enabling in the future)
+  "D106", # missing-docstring in public package (considered for re-enabling in the future)
+  "D100", # Undocumented public module (considered for re-enabling in the future)
+  "D102", # Undocumented public method (considered for re-enabling in the future)
+  "D212", # Multi-line docstring summary should start at the first line
+  "TRY203", # non-standard-try-except (considered for re-enabling in the future)
+  "TRY300", # raise-vanilla-args
+  "TRY301", # 2-within-try (considered for re-enabling in the future)
+  "A002", # Do not shadow built-in names (considered for re-enabling in the future)
+  "D101", # Undocumented public class (considered for re-enabling in the future)
+  "D104", # Undocumented public package (considered for re-enabling in the future)
+  "A005", # Do not shadow python standard library modules
+  "N818", # Exception name should end with "Error" (considered for re-enabling in the future)
+  "PLC0415", # import-outside-toplevel (considered for re-enabling in the future)
+  "RUF067", # __init__ modules should not contain code (considered for re-enabling in the future)
+  "PLE0302", # unexpected-special-method-signature (considered for re-enabling in the future)
+  "B024", # abstract base class without abstract methods (considered for re-enabling in the future)
+  "PLR0914", # too-many-locals (considered for re-enabling in the future)
+  "D415", # first line should end with a period, question mark, or exclamation point
+  "TRY003", # avoid specifying long messages outside of the exception (considered for re-enabling in the future)
+  "RET504", # unnecessary assignment before return (considered for re-enabling in the future)
+  "PTH123", # replace os.path with pathlib (considered for re-enabling in the future)
+  "EM102", # f-string support in exception (considered for re-enabling in the future)
+  "B904", # within except clause, raise exceptions with `raise ... from err` or `raise ... from None` (considered for re-enabling in the future)
+  "TRY201", # use raise without specifying exception (considered for re-enabling in the future)
+  "EM101", # exception must not use string literals (considered for re-enabling in the future)
+  "ISC001", # implicit string concatenation (considered for re-enabling in the future)
+  "UP032", # Convert str.format() to f-string (considered for re-enabling in the future)
+  "PLR6201", # Use set literal when testing for membership of a collection (considered for re-enabling in the future)
+  "BLE001", # Do not catch blind exceptions (considered for re-enabling in the future)
+  "RUF052", # local dummy variable accessed (considered for re-enabling in the future)
+  "SIM102", # use a single if statement instead of multiple ones with the same body (considered for re-enabling in the future)
+  "G004", # logging-f-string (considered for re-enabling in the future)
+  "TRY400", # use logging.exception instead of logging.error (considered for re-enabling in the future)
+  "SIM210", # use `bool(...)` instead of `True if ... else False` (considered for re-enabling in the future)
+
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+  "F401", # unused-import
+]
+"tests/**.py" = [
+  "PLW1514", # open in text mode without encoding (considered for re-enabling in the future)
+  "ARG001", # unused-function-argument
+  "ARG002", # unused-method-argument
+  "D100", # undocumented-public-module
+  "D101", # undocumented-public-class
+  "D102", # undocumented-public-method
+  "D103", # undocumented-public-function
+  "D104", # undocumented-public-package
+  "EM101", # raw-string-in-exception
+  "G004", # logging-f-string
+  "INP001", # implicit-namespace-package
+  "N806", # non-lowercase-variable-in-function
+  "PLC2701", # import-private-name
+  "PLR0914", # too-many-locals
+  "PLR0915", # too-many-statements
+  "PLR2004", # magic-value-comparison
+  "PLR6301", # no-self-use
+  "SLF001", # private-member-access
+  "TRY301", # 2-within-try
+  "W505", # doc-line-too-long
+]
+
+[tool.ruff.lint.pylint]
+max-args = 10
+max-positional-args = 10
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "microsoft", "anaconda", "main"]
+platforms = ["win-64", "osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
+
+[tool.pixi.pypi-dependencies]
+pipes-api = { path = ".", editable = true }
+
+[tool.pixi.dependencies]
+async-timeout = "==5.0.1"
+beanie = "==1.30.0"
+boto3 = "==1.40.68"
+cryptography = "==46.0.4"
+email-validator = "==2.3.0"
+fastapi = "==0.128.0"
+pydantic-settings = "==2.12.0"
+pymongo = "==4.15.3"
+python-dateutil = "==2.9.0"
+python-jose = "==3.5.0"
+requests = "==2.32.5"
+shortuuid = "==1.0.13"
+uvicorn = "==0.38.0"
+ruff = ">=0.8.6,<0.15.0"
+python-dotenv = ">=1.0.0,<=1.2.1"
+
+[tool.pixi.feature.dev.dependencies]
+httpx = "==0.28.1"
+pre-commit = "==4.2.0"
+pytz = "==2024.2"
+tox = "==4.12.1"
+types-requests = "==2.32.0.20241016"
+
+[tool.pixi.feature.test.dependencies]
+pytest = "==8.3.4"
+pytest-cov = "==6.0.0"
+
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+test = { features = ["dev", "test"], solve-group = "default" }

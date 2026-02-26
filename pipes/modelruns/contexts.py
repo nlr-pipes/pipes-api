@@ -25,12 +25,7 @@ class ModelRunSimpleContext(BaseModel):
 
     def __str__(self):
         return (
-            "{"
-            f"project: {self.project},"
-            f"projectrun: {self.projectrun},"
-            f"model: {self.model},"
-            f"modelrun: {self.modelrun}"
-            "}"
+            f"{{project: {self.project},projectrun: {self.projectrun},model: {self.model},modelrun: {self.modelrun}}}"
         )
 
 
@@ -80,10 +75,5 @@ class ModelRunObjectContext(BaseModel):
 
     def __str__(self):
         return (
-            "{"
-            f"project: {self.project},"
-            f"projectrun: {self.projectrun},"
-            f"model: {self.model},"
-            f"modelrun: {self.modelrun}"
-            "}"
+            f"{{project: {self.project},projectrun: {self.projectrun},model: {self.model},modelrun: {self.modelrun}}}"
         )

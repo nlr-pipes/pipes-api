@@ -1,50 +1,33 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from pydantic import EmailStr
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.users.schemas import UserRead
 
 import pymongo
-from pymongo import IndexModel
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, field_validator
 
-from pipes.users.schemas import UserRead, UserCreate
 
-
-class ModelingTeam(BaseModel):
-    """Modeling team information.
-
-    Attributes:
-        name: Name of the modeling team.
-        members: List of team members.
-    """
-
-    name: str = Field(
-        title="name",
-        description="Name of the modeling team",
-    )
-    members: list[UserCreate] = Field(
-        title="members",
-        description="List of team members",
-    )
-
-
-class CatalogModelCreate(BaseModel):
-    """Model schema for catalog.
+class GeneralCatalogModelCreate(BaseModel, extra="allow"):
+    """Baseline model schema for model catalog entries. All catalog model entries will validate
+    against this schema first before validating against specific schemas.
 
     Attributes:
         name: The model name.
         display_name: Display name for this model vertex.
         type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
         description: Description of the model.
-        assumptions: List of model assumptions.
         requirements: Model specific requirements (if different from Project and Project-Run).
-        expected_scenarios: List of expected model scenarios.
-        modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
         access_group: A group of users that has access to this model.
     """
 
+    catalog_schema: str = Field(
+        title="catalog_schema",
+        description="The schema that this model conforms to.",
+    )
     name: str = Field(
         title="model_catalog",
         min_length=1,
@@ -63,35 +46,20 @@ class CatalogModelCreate(BaseModel):
         title="description",
         description="Description of the model",
     )
-    assumptions: list[str] = Field(
-        title="assumptions",
-        description="List of model assumptions",
-        default=[],
-    )
     requirements: dict = Field(
         title="requirements",
         default={},
         description="Model specific requirements (if different from Project and Project-Run)",
-    )
-    expected_scenarios: list[str] = Field(
-        title="expected_scenarios",
-        description="List of expected model scenarios",
-        default=[],
-    )
-    modeling_team: ModelingTeam | None = Field(
-        title="modeling_team",
-        description="Information about the modeling team",
-        default=None,
     )
     other: dict = Field(
         title="other",
         default={},
         description="other metadata info about the model in dictionary",
     )
-    access_group: list[EmailStr] = Field(
+    access_group: Sequence[str] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group names that have access to this model",
     )
 
     @field_validator("description", mode="before")
@@ -102,8 +70,8 @@ class CatalogModelCreate(BaseModel):
         return value
 
 
-class CatalogModelUpdate(CatalogModelCreate):
-    """Model update schema.
+class GeneralCatalogModelUpdate(BaseModel, extra="allow"):
+    """Model update schema. All fields are optional for PATCH operations.
 
     Attributes:
         name: The model name.
@@ -115,13 +83,59 @@ class CatalogModelUpdate(CatalogModelCreate):
         expected_scenarios: List of expected model scenarios.
         modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
-        access_group: A group of users that has access to this model.
+        access_group: List of access group names that have access to this model.
     """
 
-    pass
+    name: str | None = Field(
+        title="model_catalog",
+        default=None,
+        description="the model name",
+    )
+    display_name: str | None = Field(
+        title="display_name",
+        default=None,
+        description="Display name for this model vertex.",
+    )
+    type: str | None = Field(
+        title="type",
+        default=None,
+        description="Type of model to use in graphic headers (e.g, 'Capacity Expansion')",
+    )
+    description: list[str] | None = Field(
+        title="description",
+        default=None,
+        description="Description of the model",
+    )
+    assumptions: list[str] | None = Field(
+        title="assumptions",
+        default=None,
+        description="List of model assumptions",
+    )
+    requirements: dict | None = Field(
+        title="requirements",
+        default=None,
+        description="Model specific requirements (if different from Project and Project-Run)",
+    )
+    other: dict | None = Field(
+        title="other",
+        default=None,
+        description="other metadata info about the model in dictionary",
+    )
+    access_group: list[str] | None = Field(
+        title="access_group",
+        default=None,
+        description="List of access group names that have access to this model",
+    )
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def validate_description(cls, value):
+        if isinstance(value, str):
+            return [value]
+        return value
 
 
-class CatalogModelRead(CatalogModelCreate):
+class GeneralCatalogModelRead(GeneralCatalogModelCreate):
     """Model read schema.
 
     Attributes:
@@ -134,16 +148,13 @@ class CatalogModelRead(CatalogModelCreate):
         expected_scenarios: List of expected model scenarios.
         modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
-        access_group: A group of users' emails that has access to this model.
+        access_group: List of access groups that have access to this model.
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
     """
 
-    access_group: list[EmailStr] = Field(
-        title="access_group",
-        default=[],
-        description="A group of users' emails that has access to this model",
-    )
+    id: PydanticObjectId = Field(exclude=True)
+
     created_at: datetime = Field(
         title="created_at",
         description="catalog model creation time",
@@ -152,9 +163,14 @@ class CatalogModelRead(CatalogModelCreate):
         title="created_by",
         description="user who created the model in catalog",
     )
+    access_group: list[AccessGroupRead] = Field(
+        title="access_group",
+        default=[],
+        description="List of access groups that have access to this model",
+    )
 
 
-class CatalogModelDocument(CatalogModelCreate, Document):
+class GeneralCatalogModelDocument(GeneralCatalogModelCreate, Document):
     """Catalog model document.
 
     Attributes:
@@ -167,7 +183,7 @@ class CatalogModelDocument(CatalogModelCreate, Document):
         expected_scenarios: List of expected model scenarios.
         modeling_team: Information about the modeling team.
         other: Other metadata info about the model in dictionary.
-        access_group: A group of users that has access to this model.
+        access_group: List of access group object IDs that have access to this model.
         created_at: Catalog model creation time.
         created_by: User who created the model in catalog.
         last_modified: Last modification datetime.
@@ -194,13 +210,13 @@ class CatalogModelDocument(CatalogModelCreate, Document):
     access_group: list[PydanticObjectId] = Field(
         title="access_group",
         default=[],
-        description="A group of users that has access to this model",
+        description="List of access group object IDs that have access to this model",
     )
 
     class Settings:
         name = "catalogmodels"
         indexes = [
-            IndexModel(
+            pymongo.IndexModel(
                 [
                     ("name", pymongo.ASCENDING),
                 ],

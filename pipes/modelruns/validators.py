@@ -49,7 +49,6 @@ class ModelRunContextValidator(ModelContextValidator):
 
 
 class ModelRunDomainValidator(DomainValidator):
-
     def __init__(self, context: ModelDocumentContext) -> None:
         self.context = context
 

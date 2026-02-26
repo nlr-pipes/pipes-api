@@ -3,6 +3,15 @@ from __future__ import annotations
 import time
 from calendar import timegm
 from datetime import datetime, timedelta
+from pipes.common.exceptions import (
+    CognitoAuthError,
+    DocumentAlreadyExists,
+    DocumentDoesNotExist,
+)
+from pipes.common.utilities import parse_organization
+from pipes.config.settings import settings
+from pipes.users.manager import UserManager
+from pipes.users.schemas import CognitoUserCreate, UserDocument
 from typing import Any
 
 import boto3
@@ -11,18 +20,8 @@ from botocore.exceptions import ClientError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwk, jwt
-from jose.exceptions import JWTError, JWKError
+from jose.exceptions import JWKError, JWTError
 from jose.utils import base64url_decode
-
-from pipes.config.settings import settings
-from pipes.common.exceptions import (
-    CognitoAuthError,
-    DocumentAlreadyExists,
-    DocumentDoesNotExist,
-)
-from pipes.common.utilities import parse_organization
-from pipes.users.schemas import CognitoUserCreate, UserDocument
-from pipes.users.manager import UserManager
 
 http_bearer = HTTPBearer()
 
@@ -42,12 +41,12 @@ class CognitoJWKsVerifier:
 
     @property
     def jwks_url(self):
-        return f"https://cognito-idp.{settings.PIPES_REGION}.amazonaws.com/{settings.PIPES_COGNITO_USER_POOL_ID}/.well-known/jwks.json"  # noqa: E501
+        return f"https://cognito-idp.{settings.PIPES_REGION}.amazonaws.com/{settings.PIPES_COGNITO_USER_POOL_ID}/.well-known/jwks.json"
 
     @property
     def keys(self):
         # Check if we have cached keys that haven't expired
-        global _jwks_cache  # pylint: disable=global-statement  # noqa: F824
+        global _jwks_cache  # noqa: PLW0602
         now = datetime.now()
         if (
             _jwks_cache["keys"] is not None
@@ -127,7 +126,7 @@ class CognitoJWKsVerifier:
                 "Not authenticated. Invalid access token - claims.",
             )
 
-        if claims["token_use"] != "access":
+        if claims["token_use"] != "access":  # noqa: S105
             raise CognitoAuthError("Not authenticated. Invalid access token - use.")
 
         message, signature = str(access_token).rsplit(".", 1)
@@ -150,9 +149,7 @@ class CognitoJWKsVerifier:
 
 
 class CognitoAuth:
-    """
-    Verify the `access token` and authorize based on scope (or groups)
-    """
+    """Verify the `access token` and authorize based on scope (or groups)"""
 
     def __init__(self):
         self.verifier = CognitoJWKsVerifier()

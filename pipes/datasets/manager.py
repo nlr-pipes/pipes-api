@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetManager(AbstractObjectManager):
-
     __label__ = NodeLabel.Dataset.value
 
     def __init__(self, context: ModelRunDocumentContext) -> None:
@@ -152,7 +151,7 @@ class DatasetManager(AbstractObjectManager):
 
         d_read = await self.read_dataset(d_doc)
         return d_read
-    
+
     async def get_dataset_document(self, d_name: str) -> DatasetDocument:
         _context = ModelRunObjectContext(
             project=self.context.project.id,

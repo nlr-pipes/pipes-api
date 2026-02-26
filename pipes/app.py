@@ -1,67 +1,79 @@
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 
-from beanie import init_beanie
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
-from motor.motor_asyncio import AsyncIOMotorClient
+# Access groups
+from pipes.accessgroups.routes import router as accessgroups_router
+from pipes.accessgroups.schemas import AccessGroupDocument
+
+# Catalog Datasets
+from pipes.catalogdatasets.routes import router as catalogdatasets_router
+from pipes.catalogdatasets.schemas import CatalogDatasetDocument
+
+# Catalog Models
+from pipes.catalogmodels.default.schemas import DefaultCatalogModelDocument
+from pipes.catalogmodels.ifac.schemas import IFACCatalogModelDocument
+from pipes.catalogmodels.routes import router as catalogmodels_router
+from pipes.catalogmodels.schemas import GeneralCatalogModelDocument
 
 # Settings
 from pipes.config.settings import settings
 
+# Datasets
+from pipes.datasets.routes import router as datasets_router
+from pipes.datasets.schemas import DatasetDocument
+
+# Handoffs
+from pipes.handoffs.routes import router as handoffs_router
+from pipes.handoffs.schemas import HandoffDocument
+
 # Health
 from pipes.health.routes import router as health_router
 
-# Catalog Models
-from pipes.catalogmodels.schemas import CatalogModelDocument
-from pipes.catalogmodels.routes import router as catalogmodels_router
-
-# Catalog Datasets
-from pipes.catalogdatasets.schemas import CatalogDatasetDocument
-from pipes.catalogdatasets.routes import router as catalogdatasets_router
-
-# Projects
-from pipes.projects.schemas import ProjectDocument
-from pipes.projects.routes import router as projects_router
-
-# Projectruns
-from pipes.projectruns.schemas import ProjectRunDocument
-from pipes.projectruns.routes import router as projectruns_router
+# Modelruns
+from pipes.modelruns.routes import router as modelruns_router
+from pipes.modelruns.schemas import ModelRunDocument
 
 # Models
 from pipes.models.routes import router as models_router
 from pipes.models.schemas import ModelDocument
 
-# Modelruns
-from pipes.modelruns.schemas import ModelRunDocument
-from pipes.modelruns.routes import router as modelruns_router
+# Projectruns
+from pipes.projectruns.routes import router as projectruns_router
+from pipes.projectruns.schemas import ProjectRunDocument
 
-# Datasets
-from pipes.datasets.schemas import DatasetDocument
-from pipes.datasets.routes import router as datasets_router
-
-# Handoffs
-from pipes.handoffs.schemas import HandoffDocument
-from pipes.handoffs.routes import router as handoffs_router
+# Projects
+from pipes.projects.routes import router as projects_router
+from pipes.projects.schemas import ProjectDocument
 
 # Tasks
-from pipes.tasks.schemas import TaskDocument
 from pipes.tasks.routes import router as tasks_router
+from pipes.tasks.schemas import TaskDocument
 
 # Teams
 from pipes.teams.routes import router as teams_router
 from pipes.teams.schemas import TeamDocument
 
 # Users
-from pipes.users.schemas import UserDocument
 from pipes.users.routes import router as users_router
+from pipes.users.schemas import UserDocument
+
+# Version
 from pipes.version import __version__
+
+from beanie import init_beanie
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse
+from motor.motor_asyncio import AsyncIOMotorClient
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # noqa: ARG001
     """FastAPI application life span"""
     # Init beanie
     if settings.PIPES_ENV in ["dev", "stage", "prod"]:
@@ -72,9 +84,7 @@ async def lifespan(app: FastAPI):
             settings.PIPES_DOCDB_PORT,
             settings.PIPES_DOCDB_NAME,
         )
-        docdb_uri += (
-            "?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
-        )
+        docdb_uri += "?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
     else:
         docdb_uri = f"mongodb://{settings.PIPES_DOCDB_HOST}:{settings.PIPES_DOCDB_PORT}/{settings.PIPES_DOCDB_NAME}"
 
@@ -92,8 +102,11 @@ async def lifespan(app: FastAPI):
             TaskDocument,
             TeamDocument,
             UserDocument,
-            CatalogModelDocument,
+            GeneralCatalogModelDocument,
+            IFACCatalogModelDocument,
+            DefaultCatalogModelDocument,
             CatalogDatasetDocument,
+            AccessGroupDocument,
         ],
     )
 
@@ -109,6 +122,21 @@ app = FastAPI(
     debug=settings.DEBUG,
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Log validation errors for debugging"""
+    body = await request.body()
+    logger.error(f"Validation error for {request.method} {request.url}")
+    logger.error(f"Request body: {body.decode('utf-8')}")
+    logger.error(f"Validation errors: {exc.errors()}")
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": exc.errors(), "body": body.decode("utf-8")},
+    )
+
 
 # CORS settings - https://fastapi.tiangolo.com/tutorial/cors/
 app.add_middleware(
@@ -132,6 +160,7 @@ app.include_router(handoffs_router, prefix="/api", tags=["handoffs"])
 app.include_router(tasks_router, prefix="/api", tags=["tasks"])
 app.include_router(teams_router, prefix="/api", tags=["teams"])
 app.include_router(users_router, prefix="/api", tags=["users"])
+app.include_router(accessgroups_router, prefix="/api", tags=["accessgroups"])
 
 
 @app.get("/")
