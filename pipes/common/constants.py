@@ -46,6 +46,7 @@ DNS_ORG_MAPPING = {
     "sandia.gov": "Sandia National Laboratories (SNL)",
     "llnl.gov": "Lawrence Livermore National Laboratory (LLNL)",
     "nrel.gov": "National Laboratory of the Rockies (NLR)",
+    "nlr.gov": "National Laboratory of the Rockies (NLR)",
     "srnl.doe.gov": "Savannah River National Laboratory (SRNL)",
     "netl.doe.gov": "National Energy Technology Laboratory (NETL)",
     "inl.gov": "Idaho National Laboratory (INL)",
