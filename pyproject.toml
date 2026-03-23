@@ -47,8 +47,8 @@ test = [
 Homepage = "https://github.com/nrel-pipes/pipes-api"
 Repository = "https://github.com/nrel-pipes/pipes-api.git"
 
-[tool.setuptools]
-packages = ["pipes"]
+[tool.setuptools.packages.find]
+include = ["pipes*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "pipes.version.__version__"}
