@@ -166,6 +166,11 @@ class GeneralDataDescriptionSchema(BaseModel):
         default=None,
         description="Units of measurement in the dataset.",
     )
+    examples: list[DatasetSchema] | None = Field(
+        title="examples",
+        default=None,
+        description="An optional list of example datasets that have been used for this category of input data.",
+    )
 
 
 class DatasetSchema(BaseModel):
@@ -180,14 +185,19 @@ class DatasetSchema(BaseModel):
         title="description",
         description="Description of the dataset.",
     )
+    default: str | None = Field(
+        title="default",
+        default=None,
+        description="Is this dataset a default input/output of the tool?",
+    )
     # Required for Published Datasets
     author: str = Field(
         title="author",
-        description="Author/owner of the dataset.",
+        description="Author/owner of the dataset. If the dataset is private/unpublished, use Private.",
     )
     date: datetime = Field(
         title="date",
-        description="Publish date of the dataset.",
+        description="Publish date of the dataset. If the dataset is private/unpublished, you can use the year it was generated, otherwise use N/A.",  # noqa: E501
     )
     version: str = Field(
         title="version",
@@ -195,7 +205,7 @@ class DatasetSchema(BaseModel):
     )
     location: str = Field(
         title="location",
-        description="Link or location of the dataset.",
+        description="Link or location of the dataset. If the dataset is private/unpublished, use Private.",
     )
     schema_info: DataSchemaSchema = Field(
         title="schema_info",
@@ -438,11 +448,6 @@ class Input(BaseModel):
             the tool (e.g. Load Forecast Data, System Asset Data).
         """,
     )
-    dataset: DatasetSchema | None = Field(
-        title="dataset",
-        default=None,
-        description="The dataset output is a specific published dataset with a location and author (e.g. 2024 ATB).",
-    )
     misc: dict[str, str] | None = Field(
         title="misc",
         default=None,
@@ -635,12 +640,12 @@ class IFACCatalogModelCreate(BaseModel):
     inputs: list[Input] | None = Field(
         title="inputs",
         default=None,
-        description="Inputs of the tool, specifically input Datasets, GeneralDataDescriptions, or Misc inputs.",
+        description="Inputs of the tool, specifically input GeneralDataDescriptions, or Misc inputs.",
     )
     outputs: list[Output] | None = Field(
         title="outputs",
         default=None,
-        description="Outputs of the tool, specifically output general data specifications in the form of Datasets.",
+        description="Outputs of the tool, specifically output GeneralDataDescriptions, or Misc inputs.",
     )
 
     # --- PIPES System Fields ---
@@ -828,12 +833,12 @@ class IFACCatalogModelUpdate(IFACCatalogModelCreate):
     inputs: list[Input] | None = Field(
         title="inputs",
         default=None,
-        description="Inputs of the tool, specifically input Datasets, GeneralDataDescriptions, or Misc inputs.",
+        description="Inputs of the tool, specifically input GeneralDataDescriptions, or Misc inputs.",
     )
     outputs: list[Output] | None = Field(
         title="outputs",
         default=None,
-        description="Outputs of the tool, specifically output general data specifications in the form of Datasets.",
+        description="Outputs of the tool, specifically output GeneralDataDescriptions, or Misc outputs.",
     )
 
     # --- PIPES System Fields ---
