@@ -16,7 +16,12 @@ from pipes.projectruns.contexts import (
     ProjectRunSimpleContext,
 )
 from pipes.projectruns.schemas import ProjectRunDocument
-from pipes.models.schemas import ModelCreate, ModelDocument, ModelRead, ModelUpdate
+from pipes.models.schemas import (
+    ModelCreate,
+    ModelDocument,
+    ModelRead,
+    ModelUpdate,
+)
 from pipes.models.validators import ModelDomainValidator
 from pipes.teams.manager import TeamManager
 from pipes.teams.schemas import TeamDocument
@@ -232,10 +237,9 @@ class ModelManager(AbstractObjectManager):
                 raise DocumentDoesNotExist(
                     f"Model '{name}' not found in project '{project_name}', project run '{projectrun_name}'",
                 )
-            else:
-                raise DocumentDoesNotExist(
-                    f"Model '{name}' not found in project '{project_name}'",
-                )
+            raise DocumentDoesNotExist(
+                f"Model '{name}' not found in project '{project_name}'",
+            )
 
         return model_doc
 

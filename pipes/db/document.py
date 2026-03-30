@@ -7,7 +7,6 @@ from pipes.db.abstract import AbstractDatabase
 
 
 class DocumentDB(AbstractDatabase):
-
     def connect(self):
         pass
 

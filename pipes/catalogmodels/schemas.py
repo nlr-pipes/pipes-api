@@ -1,0 +1,225 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
+from datetime import datetime
+from pipes.accessgroups.schemas import AccessGroupRead
+from pipes.users.schemas import UserRead
+
+import pymongo
+from beanie import Document, PydanticObjectId
+from pydantic import BaseModel, Field, field_validator
+
+
+class GeneralCatalogModelCreate(BaseModel, extra="allow"):
+    """Baseline model schema for model catalog entries. All catalog model entries will validate
+    against this schema first before validating against specific schemas.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model vertex.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        other: Other metadata info about the model in dictionary.
+        access_group: A group of users that has access to this model.
+    """
+
+    catalog_schema: str = Field(
+        title="catalog_schema",
+        description="The schema that this model conforms to.",
+    )
+    name: str = Field(
+        title="model_catalog",
+        min_length=1,
+        description="the model name",
+    )
+    display_name: str | None = Field(
+        title="display_name",
+        default=None,
+        description="Display name for this model vertex.",
+    )
+    type: str = Field(
+        title="type",
+        description="Type of model to use in graphic headers (e.g, 'Capacity Expansion')",
+    )
+    description: list[str] = Field(
+        title="description",
+        description="Description of the model",
+    )
+    requirements: dict = Field(
+        title="requirements",
+        default={},
+        description="Model specific requirements (if different from Project and Project-Run)",
+    )
+    other: dict = Field(
+        title="other",
+        default={},
+        description="other metadata info about the model in dictionary",
+    )
+    access_group: Sequence[str] = Field(
+        title="access_group",
+        default=[],
+        description="List of access group names that have access to this model",
+    )
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def validate_description(cls, value):
+        if isinstance(value, str):
+            return [value]
+        return value
+
+
+class GeneralCatalogModelUpdate(BaseModel, extra="allow"):
+    """Model update schema. All fields are optional for PATCH operations.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model vertex.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        expected_scenarios: List of expected model scenarios.
+        modeling_team: Information about the modeling team.
+        other: Other metadata info about the model in dictionary.
+        access_group: List of access group names that have access to this model.
+    """
+
+    name: str | None = Field(
+        title="model_catalog",
+        default=None,
+        description="the model name",
+    )
+    display_name: str | None = Field(
+        title="display_name",
+        default=None,
+        description="Display name for this model vertex.",
+    )
+    type: str | None = Field(
+        title="type",
+        default=None,
+        description="Type of model to use in graphic headers (e.g, 'Capacity Expansion')",
+    )
+    description: list[str] | None = Field(
+        title="description",
+        default=None,
+        description="Description of the model",
+    )
+    assumptions: list[str] | None = Field(
+        title="assumptions",
+        default=None,
+        description="List of model assumptions",
+    )
+    requirements: dict | None = Field(
+        title="requirements",
+        default=None,
+        description="Model specific requirements (if different from Project and Project-Run)",
+    )
+    other: dict | None = Field(
+        title="other",
+        default=None,
+        description="other metadata info about the model in dictionary",
+    )
+    access_group: list[str] | None = Field(
+        title="access_group",
+        default=None,
+        description="List of access group names that have access to this model",
+    )
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def validate_description(cls, value):
+        if isinstance(value, str):
+            return [value]
+        return value
+
+
+class GeneralCatalogModelRead(GeneralCatalogModelCreate):
+    """Model read schema.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model vertex.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        expected_scenarios: List of expected model scenarios.
+        modeling_team: Information about the modeling team.
+        other: Other metadata info about the model in dictionary.
+        access_group: List of access groups that have access to this model.
+        created_at: Catalog model creation time.
+        created_by: User who created the model in catalog.
+    """
+
+    id: PydanticObjectId = Field(exclude=True)
+
+    created_at: datetime = Field(
+        title="created_at",
+        description="catalog model creation time",
+    )
+    created_by: UserRead = Field(
+        title="created_by",
+        description="user who created the model in catalog",
+    )
+    access_group: list[AccessGroupRead] = Field(
+        title="access_group",
+        default=[],
+        description="List of access groups that have access to this model",
+    )
+
+
+class GeneralCatalogModelDocument(GeneralCatalogModelCreate, Document):
+    """Catalog model document.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model vertex.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        expected_scenarios: List of expected model scenarios.
+        modeling_team: Information about the modeling team.
+        other: Other metadata info about the model in dictionary.
+        access_group: List of access group object IDs that have access to this model.
+        created_at: Catalog model creation time.
+        created_by: User who created the model in catalog.
+        last_modified: Last modification datetime.
+        modified_by: User who modified the project.
+    """
+
+    created_at: datetime = Field(
+        title="created_at",
+        description="catalog model creation time",
+    )
+    created_by: PydanticObjectId = Field(
+        title="created_by",
+        description="user who created the model in catalog",
+    )
+    last_modified: datetime = Field(
+        title="last_modified",
+        default=datetime.now(),
+        description="last modification datetime",
+    )
+    modified_by: PydanticObjectId = Field(
+        title="modified_by",
+        description="user who modified the project",
+    )
+    access_group: list[PydanticObjectId] = Field(
+        title="access_group",
+        default=[],
+        description="List of access group object IDs that have access to this model",
+    )
+
+    class Settings:
+        name = "catalogmodels"
+        indexes = [
+            pymongo.IndexModel(
+                [
+                    ("name", pymongo.ASCENDING),
+                ],
+                unique=True,
+            ),
+        ]

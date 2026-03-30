@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
 from enum import Enum
+from pipes.common.schemas import ExecutionStatus, SourceCode
+from pipes.datasets.schemas import DatasetRead
+from pipes.modelruns.contexts import ModelRunObjectContext, ModelRunSimpleContext
+from pipes.users.schemas import UserCreate, UserRead
 
 import pymongo
 from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, EmailStr, Field
 from pymongo import IndexModel
-
-from pipes.common.schemas import SourceCode, ExecutionStatus
-from pipes.modelruns.contexts import ModelRunObjectContext, ModelRunSimpleContext
-from pipes.users.schemas import UserCreate, UserRead
 
 
 class TaskType(str, Enum):
@@ -20,6 +21,13 @@ class TaskType(str, Enum):
 
 
 class SubTask(BaseModel):
+    """Subtask schema.
+
+    Attributes:
+        name: Task action name.
+        description: Description of task process.
+    """
+
     name: str = Field(
         title="name",
         description="task action name",
@@ -32,6 +40,26 @@ class SubTask(BaseModel):
 
 
 class TaskCreate(BaseModel):
+    """Task creation schema.
+
+    Attributes:
+        name: Task name, must be unique to this model run.
+        type: Task type, like QAQC, Transformation, or Visualization.
+        description: Description of task process.
+        assignee: The user who conducts this task.
+        status: The task status - PENDING, RUNNING, SUCCESS, or FAILURE.
+        subtasks: List of actions under this task.
+        scheduled_start: Scheduled start date.
+        scheduled_end: Scheduled end date.
+        completion_date: Task completion date.
+        source_code: Scripts used to perform the task process.
+        input_datasets: List of datasets that the task applies to.
+        input_parameters: Non-dataset inputs, i.e. parameters in dictionary.
+        output_datasets: List of datasets produced from this task.
+        output_values: Non-dataset outputs, i.e. values in dictionary.
+        logs: Task log location.
+        notes: Notes and additional information.
+    """
 
     name: str = Field(
         title="name",
@@ -81,7 +109,7 @@ class TaskCreate(BaseModel):
         description="Scripts used to perform the task process",
         default=None,
     )
-    input_datasets: list[str] = Field(
+    input_datasets: Sequence[str] = Field(
         title="input_datasets",
         description="List of datasets that the task applies to.",
         default=[],
@@ -91,8 +119,8 @@ class TaskCreate(BaseModel):
         description="Non-dataset inputs, i.e. parameters in dictionary",
         default={},
     )
-    output_datasets: list[str] = Field(
-        title="output_datasts",
+    output_datasets: Sequence[str] = Field(
+        title="output_datasets",
         description="List of datasets produced from this task",
         default=[],
     )
@@ -114,6 +142,28 @@ class TaskCreate(BaseModel):
 
 
 class TaskRead(TaskCreate):
+    """Task read schema.
+
+    Attributes:
+        name: Task name, must be unique to this model run.
+        type: Task type, like QAQC, Transformation, or Visualization.
+        description: Description of task process.
+        assignee: Assignee in user read schema.
+        status: The task status - PENDING, RUNNING, SUCCESS, or FAILURE.
+        subtasks: List of actions under this task.
+        scheduled_start: Scheduled start date.
+        scheduled_end: Scheduled end date.
+        completion_date: Task completion date.
+        source_code: Scripts used to perform the task process.
+        input_datasets: List of datasets that the task applies to.
+        input_parameters: Non-dataset inputs, i.e. parameters in dictionary.
+        output_datasets: List of datasets produced from this task.
+        output_values: Non-dataset outputs, i.e. values in dictionary.
+        logs: Task log location.
+        notes: Notes and additional information.
+        context: Model run context.
+    """
+
     context: ModelRunSimpleContext = Field(
         title="context",
         description="model run context",
@@ -122,18 +172,44 @@ class TaskRead(TaskCreate):
         title="assignee",
         description="Assignee in user read schema",
     )
-    # input_datasets: list[DatasetRead] = Field(
-    #     title="input_datasets",
-    #     description="List of input datasets in read schema",
-    # )
-    # output_datasets: list[DatasetRead] = Field(
-    #     title="output_datasets",
-    #     description="List of output datasets in read schema",
-    #     default=[],
-    # )
+    input_datasets: list[DatasetRead] = Field(
+        title="input_datasets",
+        description="List of input datasets in read schema",
+    )
+    output_datasets: list[DatasetRead] = Field(
+        title="output_datasets",
+        description="List of output datasets in read schema",
+        default=[],
+    )
 
 
 class TaskDocument(TaskRead, Document):
+    """Task document.
+
+    Attributes:
+        name: Task name, must be unique to this model run.
+        type: Task type, like QAQC, Transformation, or Visualization.
+        description: Description of task process.
+        assignee: The assignee user object id.
+        status: The task status - PENDING, RUNNING, SUCCESS, or FAILURE.
+        subtasks: List of actions under this task.
+        scheduled_start: Scheduled start date.
+        scheduled_end: Scheduled end date.
+        completion_date: Task completion date.
+        source_code: Scripts used to perform the task process.
+        input_datasets: List of input dataset object ids.
+        input_parameters: Non-dataset inputs, i.e. parameters in dictionary.
+        output_datasets: List of output dataset object ids.
+        output_values: Non-dataset outputs, i.e. values in dictionary.
+        logs: Task log location.
+        notes: Notes and additional information.
+        context: Model run context reference.
+        created_at: Project creation time.
+        created_by: User who created the project.
+        last_modified: Last modification datetime.
+        modified_by: User who modified the project.
+    """
+
     context: ModelRunObjectContext = Field(
         title="context",
         description="model run context reference",
@@ -145,6 +221,7 @@ class TaskDocument(TaskRead, Document):
     )
     input_datasets: list[PydanticObjectId] = Field(
         title="input_datasets",
+        default=[],
         description="List of input dataset object ids",
     )
     output_datasets: list[PydanticObjectId] = Field(

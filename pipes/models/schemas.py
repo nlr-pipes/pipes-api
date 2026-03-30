@@ -1,19 +1,27 @@
 from __future__ import annotations
 
 from datetime import datetime
+
+import pymongo
+from pymongo import IndexModel
+from beanie import Document, PydanticObjectId
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from pipes.common.utilities import parse_datetime
 from pipes.projectruns.contexts import ProjectRunObjectContext, ProjectRunSimpleContext
 from pipes.teams.schemas import TeamRead
 
-import pymongo
-from beanie import Document, PydanticObjectId
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-from pymongo import IndexModel
-
 
 # Model
 class ScenarioMapping(BaseModel):
-    """Mapping model scenario to project scenarios"""
+    """Mapping model scenario to project scenarios.
+
+    Attributes:
+        model_scenario: The model scenario name.
+        project_scenarios: List of project scenario names that the model scenario maps to.
+        description: Model scenario description.
+        other: Other metadata info about the model scenario mapping in dictionary.
+    """
 
     model_scenario: str = Field(
         title="model_scenario",
@@ -45,7 +53,22 @@ class ScenarioMapping(BaseModel):
 
 
 class ModelCreate(BaseModel):
-    """Model schema"""
+    """Model schema.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        modeling_team: Which modeling team to link this model to.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        scheduled_start: Schedule model start date in YYYY-MM-DD format.
+        scheduled_end: Schedule model end date in YYYY-MM-DD format.
+        expected_scenarios: List of expected model scenarios.
+        scenario_mappings: Model scenarios (if different) and how they map to the project scenarios.
+        other: Other metadata info about the model in dictionary.
+    """
 
     name: str = Field(
         title="model",
@@ -130,10 +153,44 @@ class ModelCreate(BaseModel):
         return value
 
 
-class ModelUpdate(ModelCreate): ...
+class ModelUpdate(ModelCreate):
+    """Model update schema.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        modeling_team: Which modeling team to link this model to.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        scheduled_start: Schedule model start date in YYYY-MM-DD format.
+        scheduled_end: Schedule model end date in YYYY-MM-DD format.
+        expected_scenarios: List of expected model scenarios.
+        scenario_mappings: Model scenarios (if different) and how they map to the project scenarios.
+        other: Other metadata info about the model in dictionary.
+    """
 
 
 class ModelRead(ModelCreate):
+    """Model read schema.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        modeling_team: The modeling team object.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        scheduled_start: Schedule model start date in YYYY-MM-DD format.
+        scheduled_end: Schedule model end date in YYYY-MM-DD format.
+        expected_scenarios: List of expected model scenarios.
+        scenario_mappings: Model scenarios (if different) and how they map to the project scenarios.
+        other: Other metadata info about the model in dictionary.
+        context: Project run context.
+    """
+
     context: ProjectRunSimpleContext = Field(
         title="context",
         description="project run context",
@@ -145,6 +202,28 @@ class ModelRead(ModelCreate):
 
 
 class ModelDocument(ModelRead, Document):
+    """Model document.
+
+    Attributes:
+        name: The model name.
+        display_name: Display name for this model.
+        type: Type of model to use in graphic headers (e.g, 'Capacity Expansion').
+        description: Description of the model.
+        modeling_team: The modeling team object id.
+        assumptions: List of model assumptions.
+        requirements: Model specific requirements (if different from Project and Project-Run).
+        scheduled_start: Schedule model start date in YYYY-MM-DD format.
+        scheduled_end: Schedule model end date in YYYY-MM-DD format.
+        expected_scenarios: List of expected model scenarios.
+        scenario_mappings: Model scenarios (if different) and how they map to the project scenarios.
+        other: Other metadata info about the model in dictionary.
+        context: The project run object id.
+        created_at: Model creation time.
+        created_by: User who created the model.
+        last_modified: Model's last modification datetime.
+        modified_by: User who modified the model.
+    """
+
     context: ProjectRunObjectContext = Field(
         title="context",
         description="the project run object id",
@@ -157,20 +236,20 @@ class ModelDocument(ModelRead, Document):
     # document information
     created_at: datetime = Field(
         title="created_at",
-        description="project creation time",
+        description="model creation time",
     )
     created_by: PydanticObjectId = Field(
         title="created_by",
-        description="user who created the project",
+        description="user who created the model",
     )
     last_modified: datetime = Field(
         title="last_modified",
         default=datetime.now(),
-        description="last modification datetime",
+        description="model's last modification datetime",
     )
     modified_by: PydanticObjectId = Field(
         title="modified_by",
-        description="user who modified the project",
+        description="user who modified the model",
     )
 
     class Settings:

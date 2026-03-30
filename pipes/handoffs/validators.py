@@ -10,7 +10,6 @@ from pipes.handoffs.schemas import HandoffCreate
 
 
 class HandoffDomainValidator(DomainValidator):
-
     def __init__(self, context: ProjectRunDocumentContext) -> None:
         self.context = context
         self.from_model_doc = None

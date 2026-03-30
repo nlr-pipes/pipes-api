@@ -12,6 +12,14 @@ from pipes.users.schemas import UserRead, UserCreate
 
 # Team
 class TeamCreate(BaseModel):
+    """Team creation schema.
+
+    Attributes:
+        name: The team name.
+        description: The team description.
+        members: List of users.
+    """
+
     name: str = Field(
         title="name",
         description="The team name",
@@ -54,10 +62,25 @@ class TeamCreate(BaseModel):
 
 
 class TeamUpdate(TeamCreate):
-    pass
+    """Team update schema.
+
+    Attributes:
+        name: The team name.
+        description: The team description.
+        members: List of users.
+    """
 
 
 class TeamRead(TeamCreate):
+    """Team read schema.
+
+    Attributes:
+        name: The team name.
+        description: The team description.
+        members: List of users.
+        context: Project context of team.
+    """
+
     context: ProjectSimpleContext = Field(
         title="context",
         description="project context of team",
@@ -70,6 +93,13 @@ class TeamRead(TeamCreate):
 
 
 class TeamBasicRead(BaseModel):
+    """Team basic read schema.
+
+    Attributes:
+        name: The team name.
+        description: The team description.
+    """
+
     name: str = Field(
         title="name",
         description="The team name",
@@ -82,7 +112,14 @@ class TeamBasicRead(BaseModel):
 
 
 class TeamDocument(TeamRead, Document):
-    """Team document in db"""
+    """Team document in db.
+
+    Attributes:
+        name: The team name.
+        description: The team description.
+        members: List of user object ids.
+        context: Project referenced context.
+    """
 
     context: ProjectObjectContext = Field(
         title="context",

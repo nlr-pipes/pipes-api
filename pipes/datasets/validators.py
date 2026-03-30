@@ -6,7 +6,6 @@ from pipes.datasets.schemas import DatasetCreate
 
 
 class DatasetDomainValidator(DomainValidator):
-
     def __init__(self, context) -> None:
         self.context = context
 

@@ -1,5 +1,5 @@
 # Build stage - includes build tools and compiles dependencies
-FROM python:3.12-slim-trixie AS builder
+FROM python:3.12-slim AS builder
 
 # Set build environment variables
 ENV PIP_NO_CACHE_DIR=1 \
@@ -12,6 +12,7 @@ RUN apt-get update \
         build-essential \
         gcc \
         g++ \
+    && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment to isolate dependencies
@@ -19,12 +20,12 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy and install Python dependencies
-COPY requirements.txt requirements-dev.txt ./
-RUN pip install --upgrade pip setuptools \
-    && pip install -r requirements-dev.txt
+COPY pyproject.toml ./
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install ".[dev]"
 
 # Production stage - minimal runtime image
-FROM python:3.12-slim-trixie AS runtime
+FROM python:3.12-slim AS runtime
 
 # Set runtime environment variables
 ENV LC_ALL=C.UTF-8 \
@@ -37,6 +38,7 @@ ENV LC_ALL=C.UTF-8 \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         netcat-openbsd \
+    && apt-get upgrade -y \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

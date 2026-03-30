@@ -4,7 +4,6 @@ from pipes.db.abstract import AbstractDatabase
 
 
 class DynamoDB(AbstractDatabase):
-
     def __init__(self):
         self.connection = None
 
