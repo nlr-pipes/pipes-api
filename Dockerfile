@@ -19,10 +19,9 @@ RUN apt-get update \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy and install Python dependencies
-COPY pyproject.toml ./
-RUN pip install --upgrade pip setuptools wheel \
-    && pip install ".[dev]"
+# Copy requirements and install dependencies directly
+COPY requirements.txt requirements-dev.txt ./
+RUN pip install --upgrade pip setuptools wheel && pip install -r requirements-dev.txt
 
 # Production stage - minimal runtime image
 FROM python:3.12-slim AS runtime
