@@ -28,6 +28,11 @@ class GeneralCatalogModelCreate(BaseModel, extra="allow"):
         title="catalog_schema",
         description="The schema that this model conforms to.",
     )
+    schema_version: str | None = Field(
+        title="schema_version",
+        default=None,
+        description="Schema version this specsheet was authored against (e.g. '1.0').",
+    )
     name: str = Field(
         title="model_catalog",
         min_length=1,

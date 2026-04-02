@@ -44,8 +44,8 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/nrel-pipes/pipes-api"
-Repository = "https://github.com/nrel-pipes/pipes-api.git"
+Homepage = "https://github.com/nlr-pipes/pipes-api"
+Repository = "https://github.com/nlr-pipes/pipes-api.git"
 
 [tool.setuptools.packages.find]
 include = ["pipes*"]
