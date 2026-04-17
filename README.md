@@ -140,7 +140,6 @@ Enter claude code, and install plugins
 The following skills and frameworks are recommended:
 
 * `superpowers`
-* `frontend-design`
 * `context7`
 
 Also, we need to install `openspec` for this project,
