@@ -171,3 +171,6 @@ token.sh
 .pixi/*
 !.pixi/config.toml
 .vscode/*
+
+# claude
+.claude/
