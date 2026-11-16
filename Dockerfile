@@ -36,6 +36,7 @@ ENV LC_ALL=C.UTF-8 \
 # Install only runtime dependencies (no build tools!)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        curl \
         netcat-openbsd \
     && apt-get upgrade -y \
     && apt-get autoremove -y \
